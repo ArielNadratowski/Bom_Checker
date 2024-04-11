@@ -19,7 +19,7 @@ class BomCheckerMainWindow(tk.Tk):
         # set up main window size and title
         self.geometry("1500x800")
         self.title("Bom Checker")
-        self.test_name = tk.Label(self, text = "Bom Checker :)")
+        self.test_name = tk.Label(self, text = "Bom Checker :)", font = ("Segoe UI", 15, "bold"))
         self.test_name.pack(side = "top")
 
         # set up frame for buttons you interact with
@@ -29,78 +29,78 @@ class BomCheckerMainWindow(tk.Tk):
         self.bomA_label_value = tk.StringVar(input_frame, "Please upload file")
         bomA_button = tk.Button(input_frame, text = "upload BOM A", command = self.uploadFileA)
         self.bomA_label = tk.Label(input_frame, textvariable=self.bomA_label_value)
-        bomA_button.grid(row = 0, column = 0)
-        self.bomA_label.grid(row = 0, column = 1, columnspan = 9, sticky = "W", padx = 5, pady = 5)
+        bomA_button.grid(row = 3, column = 2, padx = 5, pady = (30, 5))
+        self.bomA_label.grid(row = 3, column = 3, columnspan = 7, sticky = "W", padx = 5, pady = (30, 5))
 
         self.bomB_label_value = tk.StringVar(input_frame, "Please upload file")
         bomB_button = tk.Button(input_frame, text = "upload BOM B", command = self.uploadFileB)
         self.bomB_label = tk.Label(input_frame, textvariable=self.bomB_label_value)   
-        bomB_button.grid(row = 1, column = 0)
-        self.bomB_label.grid(row = 1, column = 1, columnspan = 9, sticky = "W", padx = 5, pady = 5)
+        bomB_button.grid(row = 4, column = 2)
+        self.bomB_label.grid(row = 4, column = 3, columnspan = 7, sticky = "W", padx = 5, pady = 5)
 
         # take input for what columns are what
         instructions = tk.Label(input_frame, text = "Please type the following column names EXACTLY as labeled in their respective BOM file", font = ("Segoe UI", 11, "bold"))
-        instructions.grid(row = 2, column = 0, columnspan = 10, sticky = "W", padx = 5, pady = 5)
+        instructions.grid(row = 0, column = 0, columnspan = 10, sticky = "W", padx = 5, pady = 5)
 
-        descriptionA_input = tk.Text(input_frame, height =1, width = 10)
+        descriptionA_input = tk.Text(input_frame, height =1, width = 15)
         descriptionA_label = tk.Label(input_frame, text = "Description BOM A")
-        descriptionA_input.grid(row = 3, column = 1, padx = 5, pady = 5)
-        descriptionA_label.grid(row = 3, column = 0, padx = 5, pady = 5)
+        descriptionA_input.grid(row = 1, column = 1, padx = 5, pady = 5)
+        descriptionA_label.grid(row = 1, column = 0, padx = 5, pady = 5)
 
-        descriptionB_input = tk.Text(input_frame, height = 1, width = 10)
+        descriptionB_input = tk.Text(input_frame, height = 1, width = 15)
         descriptionB_label = tk.Label(input_frame, text = "Description BOM B")
-        descriptionB_input.grid(row = 4, column = 1, padx = 5, pady = 5)
-        descriptionB_label.grid(row = 4, column = 0, padx = 5, pady = 5)
+        descriptionB_input.grid(row = 2, column = 1, padx = 5, pady = 5)
+        descriptionB_label.grid(row = 2, column = 0, padx = 5, pady = 5)
 
-        quantityA_input = tk.Text(input_frame, height = 1, width = 10)
+        quantityA_input = tk.Text(input_frame, height = 1, width = 15)
         quantityA_label = tk.Label(input_frame, text = "Quantity BOM A")
-        quantityA_input.grid(row = 3, column = 3, padx = 5, pady = 5)
-        quantityA_label.grid(row = 3, column = 2, padx = 5, pady = 5)
+        quantityA_input.grid(row = 1, column = 3, padx = 5, pady = 5)
+        quantityA_label.grid(row = 1, column = 2, padx = 5, pady = 5)
 
-        quantityB_input = tk.Text(input_frame, height = 1, width = 10)
+        quantityB_input = tk.Text(input_frame, height = 1, width = 15)
         quantityB_label = tk.Label(input_frame, text = "Quantity BOM B")
-        quantityB_input.grid(row = 4, column = 3, padx = 5, pady = 5)
-        quantityB_label.grid(row = 4, column = 2, padx = 5, pady = 5)
+        quantityB_input.grid(row = 2, column = 3, padx = 5, pady = 5)
+        quantityB_label.grid(row = 2, column = 2, padx = 5, pady = 5)
 
-        ref_dsgA_input = tk.Text(input_frame, height = 1, width = 10)
+        ref_dsgA_input = tk.Text(input_frame, height = 1, width = 15)
         ref_dsgA_label = tk.Label(input_frame, text = "Reference Designator BOM A")
-        ref_dsgA_input.grid(row = 3, column = 5, padx = 5, pady = 5)
-        ref_dsgA_label.grid(row = 3, column = 4, padx = 5, pady = 5)
+        ref_dsgA_input.grid(row = 1, column = 5, padx = 5, pady = 5)
+        ref_dsgA_label.grid(row = 1, column = 4, padx = 5, pady = 5)
 
-        ref_dsgB_input = tk.Text(input_frame, height = 1, width = 10)
+        ref_dsgB_input = tk.Text(input_frame, height = 1, width = 15)
         ref_dsgB_label = tk.Label(input_frame, text = "Reference Designator BOM B")
-        ref_dsgB_input.grid(row = 4, column = 5, padx = 5, pady = 5)
-        ref_dsgB_label.grid(row = 4, column = 4, padx = 5, pady = 5)
+        ref_dsgB_input.grid(row = 2, column = 5, padx = 5, pady = 5)
+        ref_dsgB_label.grid(row = 2, column = 4, padx = 5, pady = 5)
 
-        manuA_input = tk.Text(input_frame, height = 1, width = 10)
+        manuA_input = tk.Text(input_frame, height = 1, width = 15)
         manuA_label = tk.Label(input_frame, text = "Manufacturer BOM A")
-        manuA_input.grid(row = 3, column = 7, padx = 5, pady = 5)
-        manuA_label.grid(row = 3, column = 6, padx = 5, pady = 5)
+        manuA_input.grid(row = 1, column = 7, padx = 5, pady = 5)
+        manuA_label.grid(row = 1, column = 6, padx = 5, pady = 5)
 
-        manuB_input = tk.Text(input_frame, height = 1, width = 10)
-        manuB_label = tk.Label(input_frame, text = "Manufacturer Column BOM B")
-        manuB_input.grid(row = 4, column = 7, padx = 5, pady = 5)
-        manuB_label.grid(row = 4, column = 6, padx = 5, pady = 5)
+        manuB_input = tk.Text(input_frame, height = 1, width = 15)
+        manuB_label = tk.Label(input_frame, text = "Manufacturer BOM B")
+        manuB_input.grid(row = 2, column = 7, padx = 5, pady = 5)
+        manuB_label.grid(row = 2, column = 6, padx = 5, pady = 5)
         
-        mpnA_input = tk.Text(input_frame, height = 1, width = 10)
+        mpnA_input = tk.Text(input_frame, height = 1, width = 15)
         mpnA_label = tk.Label(input_frame, text = "Manufacturer Part Number BOM A")
-        mpnA_input.grid(row = 3, column = 9, padx = 5, pady = 5)
-        mpnA_label.grid(row = 3, column = 8, padx = 5, pady = 5)
+        mpnA_input.grid(row = 1, column = 9, padx = 5, pady = 5)
+        mpnA_label.grid(row = 1, column = 8, padx = 5, pady = 5)
 
-        mpnB_input = tk.Text(input_frame, height = 1, width = 10)
+        mpnB_input = tk.Text(input_frame, height = 1, width = 15)
         mpnB_label = tk.Label(input_frame, text = "Manufacturer Part Number BOM B")
-        mpnB_input.grid(row = 4, column = 9, padx = 5, pady = 5)
-        mpnB_label.grid(row = 4, column = 8, padx = 5, pady = 5)
+        mpnB_input.grid(row = 2, column = 9, padx = 5, pady = 5)
+        mpnB_label.grid(row = 2, column = 8, padx = 5, pady = 5)
  
         headerA_input = tk.Text(input_frame, height = 1, width = 10)
         headerA_label = tk.Label(input_frame, text = "Header *Row Number* BOM A")
-        headerA_input.grid(row = 5, column = 1, padx = 5, pady = 5)
-        headerA_label.grid(row = 5, column = 0, padx = 5, pady = 5)
+        headerA_input.grid(row = 3, column = 1, padx = 5, pady = (30, 5))
+        headerA_label.grid(row = 3, column = 0, padx = 5, pady = (30, 5))
 
         headerB_input = tk.Text(input_frame, height = 1, width = 10)
         headerB_label = tk.Label(input_frame, text = "Header *Row Number* BOM B")
-        headerB_input.grid(row = 6, column = 1, padx = 5, pady = 5)
-        headerB_label.grid(row = 6, column = 0, padx = 5, pady = 5)
+        headerB_input.grid(row = 4, column = 1, padx = 5, pady = 5)
+        headerB_label.grid(row = 4, column = 0, padx = 5, pady = 5)
 
         compare_button = tk.Button(input_frame, text = "COMPARE BOMs", command = compareBoms)
         compare_button.grid(row = 7, column = 0, columnspan = 10, padx = 10, pady = 10)
@@ -130,20 +130,17 @@ class BomCheckerMainWindow(tk.Tk):
         flagged_rows_scrollx.pack(side = "bottom", fill = "x")
 
 
-
-
-
-
-
     def uploadFileA(self, *_):
         filename = filedialog.askopenfilename()
-        print('Selected:', filename)
         self.bomA_label_value.set(filename)
 
     def uploadFileB(self, *_):
         filename = filedialog.askopenfilename()
-        print('Selected:', filename)
         self.bomB_label_value.set(filename)
+    
+    def compareBoms(self, *_):
+        print("do stuff! :)))")
+        
         
 
 
