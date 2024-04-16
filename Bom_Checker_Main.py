@@ -118,15 +118,10 @@ class BomCheckerMainWindow(tk.Tk):
         compare_button.grid(row = 7, column = 0, columnspan = 10, padx = 10, pady = 10)
 
         # make frame to display the warnings
-        warnings_frame = tk.Frame(self)
-        warnings_frame.pack(side = "top", padx = 10, pady = 10)
-        warnings_frame.pack_propagate(False)
+        self.warnings_frame = tk.Frame(self)
+        self.warnings_frame.pack(side = "top", padx = 10, pady = 10)
+        self.warnings_frame.pack_propagate(False)
         
-        warnings_row = []
-        self.warnings_list = ["warning1", "warning2", "warning3"]
-        for index, value in enumerate(self.warnings_list):
-            warnings_row.append(ttk.Label(warnings_frame, text = value))
-            warnings_row[index].grid()
 
         # frame for the flagged rows from the BOMs
         flagged_rows_frame = tk.LabelFrame(self, text = "Flagged Rows")
@@ -215,12 +210,15 @@ class BomCheckerMainWindow(tk.Tk):
 
     def compareBoms(self, *_):
         if self.bomA_status == 1 and self.bomB_status == 1: # want: make this throw an error if this doesn't evaluate
-            restructured_bomA = split_Ref_Designator_To_Separate_Columns(self.bomA, self.ref_dsgA, self.descA, self.quantA, self.manuA, self.mpnA)
-            restructured_bomB = split_Ref_Designator_To_Separate_Columns(self.bomB, self.ref_dsgB, self.descB, self.quantB, self.manuB, self.mpnB)
+            warnings_row = []
+            warnings_list = []
 
-            check_Boms_Exact_Match(restructured_bomA, restructured_bomB)    
-            check_For_Duplicates(restructured_bomA, restructured_bomB)
-            flagged_rows_temp_storage = compare_Ref_Designators(restructured_bomA, restructured_bomB)
+            restructured_bomA = split_Ref_Designator_To_Separate_Columns(warnings_list, self.bomA, self.ref_dsgA, self.descA, self.quantA, self.manuA, self.mpnA)
+            restructured_bomB = split_Ref_Designator_To_Separate_Columns(warnings_list, self.bomB, self.ref_dsgB, self.descB, self.quantB, self.manuB, self.mpnB)
+            
+            check_Boms_Exact_Match(warnings_list, restructured_bomA, restructured_bomB)    
+            check_For_Duplicates(warnings_list, restructured_bomA, restructured_bomB)
+            flagged_rows_temp_storage = compare_Ref_Designators(warnings_list, restructured_bomA, restructured_bomB)
             self.flagged_rows["column"] = list(flagged_rows_temp_storage.columns)
             self.flagged_rows["show"]  = "headings"
             for column in self.flagged_rows["columns"]:
@@ -229,20 +227,19 @@ class BomCheckerMainWindow(tk.Tk):
             flagged_rows_temp_storage_rows = flagged_rows_temp_storage.to_numpy().tolist()
             for row in flagged_rows_temp_storage_rows:
                 self.flagged_rows.insert("", "end", values = row)
+
+            
+
+        for index, value in enumerate(warnings_list):
+            warnings_row.append(ttk.Label(self.warnings_frame, text = value))
+            warnings_row[index].grid()
             
             
-
-
-
 
     
-def split_Ref_Designator_To_Separate_Columns(input_bom, input_ref_dsg, input_description, input_quantity, input_manufacturer1, input_manufacturer_part_number1):
-    print(input_ref_dsg)
+def split_Ref_Designator_To_Separate_Columns(warnings, input_bom, input_ref_dsg, input_description, input_quantity, input_manufacturer1, input_manufacturer_part_number1):
     input_bom = input_bom.rename(columns={input_ref_dsg: "Ref Dsg", input_description: 'Description', input_quantity: 'Quantity', input_manufacturer1: 'Manufacturer 1', input_manufacturer_part_number1: 'Manufacturer 1 part number'}, errors = "raise")
-    print(input_bom.head())
     input_bom_no_na = input_bom.dropna(subset=["Ref Dsg"], inplace=False) # drop any rows that are missing reference designators
-    if len(input_bom) != len(input_bom_no_na):
-        print("Warning, some rows were dropped due to missing reference designators")
     input_bom_no_na = input_bom_no_na.fillna("<NA>") # replacing null values (floats) with certain string in case that becomes a problem later (it does if trying to apply strimg methods down a column with float NAs)
     input_bom_no_na["Ref Dsg"] = input_bom_no_na["Ref Dsg"].str.replace(" ","") # get rid of any whitespace so that the next line splits cleanly
 
@@ -267,26 +264,24 @@ def split_Ref_Designator_To_Separate_Columns(input_bom, input_ref_dsg, input_des
 
 
 # check if boms are exact match
-def check_Boms_Exact_Match(input_bomA, input_bom_B): 
+def check_Boms_Exact_Match(warnings, input_bomA, input_bom_B): 
 # check if exact match between boms
     if len(input_bomA) == len(input_bom_B):
         boms_exact_match = input_bomA == input_bom_B # only works if boms are same dimensions
         if np.all(boms_exact_match['Description'] == True) and np.all(boms_exact_match["Quantity"] == True) and np.all(boms_exact_match["Manufacturer 1"] == True) and np.all(boms_exact_match['Manufacturer 1 part number'] == True) and np.all(boms_exact_match["ref_dsg_position"] == True) and np.all(boms_exact_match["split_ref_designators"] == True):
-            print("bomA and bomB are exact matches") # if overall boms match row for row (if so, then they're exact matches and no need to further check)
+            warnings.append("bomA and bomB are exact matches") # if overall boms match row for row (if so, then they're exact matches and no need to further check)
         else:
-            print("bomA and bomB do not match")
+            warnings.append("bomA and bomB do not match")
 
 # check for dupolicate entries            
-def check_For_Duplicates(input_bomA, input_bomB):
+def check_For_Duplicates(warnings, input_bomA, input_bomB):
     if input_bomA['split_ref_designators'].duplicated().any():
         duplicated = input_bomA['split_ref_designators'].duplicated()
         list_of_duplicates = []
         for index, item in enumerate(duplicated, start=0):
             if item == True:
                 list_of_duplicates.append(input_bomA.loc[index]["split_ref_designators"])
-        print("The following reference designators in bomB have duplicated entries:", list_of_duplicates)
-    else: 
-        print("There are no duplicate reference designators in bomA")
+        warnings.append("The following reference designators in bomB have duplicated entries: " + str(list_of_duplicates))
     
     if input_bomB['split_ref_designators'].duplicated().any():
         duplicated = input_bomB['split_ref_designators'].duplicated()
@@ -294,9 +289,7 @@ def check_For_Duplicates(input_bomA, input_bomB):
         for index, item in enumerate(duplicated, start=0):
             if item == True:
                 list_of_duplicates.append(input_bomB.loc[index]["split_ref_designators"])
-        print("The following reference designators in bomB have duplicated entries:", list_of_duplicates)
-    else: 
-        print("There are no duplicate reference designators in bomB")
+        warnings.append("The following reference designators in bomB have duplicated entries: " + str(list_of_duplicates))
 
 
 # make sequence matcher function to use later
@@ -304,7 +297,7 @@ def apply_sequence_matcher(s, c1, c2):
     return difflib.SequenceMatcher(None, s[c1], s[c2]).ratio()
         
 #  Compare reference designators
-def compare_Ref_Designators(input_bomA, input_bom_B):
+def compare_Ref_Designators(warnings, input_bomA, input_bom_B):
     # check if missing
     merged_boms = input_bomA.merge(input_bom_B, how='inner', on="split_ref_designators", sort=True, suffixes=('_A', '_B'), copy=None, indicator=False, validate=None)
     in_bomA_not_in_bomB = ~input_bomA["split_ref_designators"].isin(merged_boms["split_ref_designators"])
@@ -313,7 +306,7 @@ def compare_Ref_Designators(input_bomA, input_bom_B):
         if item == True:
             list_ref_dsg_not_in_bomB.append(input_bomA.loc[index]["split_ref_designators"])
     if len(list_ref_dsg_not_in_bomB) != 0:
-        print("The following reference designators are in bomA but not in bomB:", list_ref_dsg_not_in_bomB)
+        warnings.append("The following reference designators are in bomA but not in bomB: " + str(list_ref_dsg_not_in_bomB))
 
     in_bomB_not_in_bomA = ~input_bom_B["split_ref_designators"].isin(merged_boms["split_ref_designators"])
     list_ref_dsg_not_in_bomA = []
@@ -321,7 +314,7 @@ def compare_Ref_Designators(input_bomA, input_bom_B):
         if item == True:
             list_ref_dsg_not_in_bomA.append(input_bom_B.loc[index]["split_ref_designators"])
     if len(list_ref_dsg_not_in_bomA) != 0:
-        print("The following reference designators are in bomB but not in bomA:", list_ref_dsg_not_in_bomA)
+        warnings.append("The following reference designators are in bomB but not in bomA: " + str(list_ref_dsg_not_in_bomA))
 
     # check if stuff doesn't match
     merged_boms[["Description_A", "Description_B", "Manufacturer 1_A", "Manufacturer 1_B", "Manufacturer 1 part number_A", "Manufacturer 1 part number_B"]] = merged_boms[["Description_A", "Description_B", "Manufacturer 1_A", "Manufacturer 1_B", "Manufacturer 1 part number_A", "Manufacturer 1 part number_B"]].astype(str) 
@@ -334,16 +327,16 @@ def compare_Ref_Designators(input_bomA, input_bom_B):
         temp_index = merged_boms.index[merged_boms['split_ref_designators'] == item].tolist()
         if len(temp_index) == 1:
             if merged_boms.loc[temp_index]["Description_A"].tolist() != merged_boms.loc[temp_index]["Description_B"].tolist(): 
-                print("description for", item, "doesn't match!")
+                warnings.append("description for " + str(item) + " doesn't match!")
                 flagged_rows = flagged_rows + temp_index
             if merged_boms.loc[temp_index]["Quantity_A"].tolist() != merged_boms.loc[temp_index]["Quantity_B"].tolist(): 
-                print("quantity for", item, "doesn't match!")
+                warnings.append("quantity for " + str(item) + " doesn't match!")
                 flagged_rows = flagged_rows + temp_index
             if merged_boms.loc[temp_index]["Manufacturer 1_A"].tolist() != merged_boms.loc[temp_index]["Manufacturer 1_B"].tolist(): 
-                print("manufacturer1 for", item, "doesn't match!")
+                warnings.append("manufacturer1 for " + str(item) + " doesn't match!")
                 flagged_rows = flagged_rows + temp_index
             if merged_boms.loc[temp_index]["Manufacturer 1 part number_A"].tolist() != merged_boms.loc[temp_index]["Manufacturer 1 part number_B"].tolist():
-                print("manufacturer1 part number for", item, "doesn't match!")
+                warnings.append("manufacturer1 part number for " + str(item) + " doesn't match!")
                 flagged_rows = flagged_rows + temp_index
         if len(temp_index) > 1:
             flagged_rows = flagged_rows + temp_index
