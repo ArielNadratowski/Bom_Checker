@@ -133,11 +133,11 @@ class BomCheckerMainWindow(tk.Tk):
         flagged_rows_frame.pack(side = "bottom", fill = "both", expand = True, padx = 10, pady = 10)
 
         # treeview for the actual data
-        flagged_rows = ttk.Treeview(flagged_rows_frame)
-        flagged_rows.place(relheight = 1, relwidth = 1)
-        flagged_rows_scrolly = tk.Scrollbar(flagged_rows_frame, orient = "vertical", command = flagged_rows.yview)
-        flagged_rows_scrollx = tk.Scrollbar(flagged_rows_frame, orient = "horizontal", command = flagged_rows.xview)
-        flagged_rows.configure(xscrollcommand = flagged_rows_scrollx.set, yscrollcommand = flagged_rows_scrolly.set)
+        self.flagged_rows = ttk.Treeview(flagged_rows_frame)
+        self.flagged_rows.place(relheight = 1, relwidth = 1)
+        flagged_rows_scrolly = tk.Scrollbar(flagged_rows_frame, orient = "vertical", command = self.flagged_rows.yview)
+        flagged_rows_scrollx = tk.Scrollbar(flagged_rows_frame, orient = "horizontal", command = self.flagged_rows.xview)
+        self.flagged_rows.configure(xscrollcommand = flagged_rows_scrollx.set, yscrollcommand = flagged_rows_scrolly.set)
         flagged_rows_scrolly.pack(side = "right", fill = "y")
         flagged_rows_scrollx.pack(side = "bottom", fill = "x")
 
@@ -217,12 +217,20 @@ class BomCheckerMainWindow(tk.Tk):
         if self.bomA_status == 1 and self.bomB_status == 1: # want: make this throw an error if this doesn't evaluate
             restructured_bomA = split_Ref_Designator_To_Separate_Columns(self.bomA, self.ref_dsgA, self.descA, self.quantA, self.manuA, self.mpnA)
             restructured_bomB = split_Ref_Designator_To_Separate_Columns(self.bomB, self.ref_dsgB, self.descB, self.quantB, self.manuB, self.mpnB)
-            print(restructured_bomA)
 
             check_Boms_Exact_Match(restructured_bomA, restructured_bomB)    
             check_For_Duplicates(restructured_bomA, restructured_bomB)
-            test = compare_Ref_Designators(restructured_bomA, restructured_bomB)
-            print(test)
+            flagged_rows_temp_storage = compare_Ref_Designators(restructured_bomA, restructured_bomB)
+            self.flagged_rows["column"] = list(flagged_rows_temp_storage.columns)
+            self.flagged_rows["show"]  = "headings"
+            for column in self.flagged_rows["columns"]:
+                self.flagged_rows.heading(column, text = column)
+
+            flagged_rows_temp_storage_rows = flagged_rows_temp_storage.to_numpy().tolist()
+            for row in flagged_rows_temp_storage_rows:
+                self.flagged_rows.insert("", "end", values = row)
+            
+            
 
 
 
@@ -327,6 +335,7 @@ def compare_Ref_Designators(input_bomA, input_bom_B):
         if len(temp_index) == 1:
             if merged_boms.loc[temp_index]["Description_A"].tolist() != merged_boms.loc[temp_index]["Description_B"].tolist(): 
                 print("description for", item, "doesn't match!")
+                flagged_rows = flagged_rows + temp_index
             if merged_boms.loc[temp_index]["Quantity_A"].tolist() != merged_boms.loc[temp_index]["Quantity_B"].tolist(): 
                 print("quantity for", item, "doesn't match!")
                 flagged_rows = flagged_rows + temp_index
