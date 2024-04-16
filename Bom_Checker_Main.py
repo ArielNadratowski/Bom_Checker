@@ -1,17 +1,17 @@
 # Bom Checker main window
 
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk, font
+from tkinter import filedialog, messagebox, ttk
 import pandas as pd
+import numpy as np
+#import re
+import difflib
+from functools import partial
 
 def main():
 
     BomCheckerMainWindow().mainloop() 
 
-
-
-def compareBoms(event = None):
-    print("comparing boms")
 
 class BomCheckerMainWindow(tk.Tk):
     def __init__(self):
@@ -42,67 +42,79 @@ class BomCheckerMainWindow(tk.Tk):
         instructions = tk.Label(input_frame, text = "Please type the following column names EXACTLY as labeled in their respective BOM file", font = ("Segoe UI", 11, "bold"))
         instructions.grid(row = 0, column = 0, columnspan = 10, sticky = "W", padx = 5, pady = 5)
 
-        descriptionA_input = tk.Text(input_frame, height =1, width = 15)
+        self.descriptionA_input = tk.Text(input_frame, height =1, width = 15)
+        self.descriptionA_input.insert(tk.END, "DESCRIPTION")
         descriptionA_label = tk.Label(input_frame, text = "Description BOM A")
-        descriptionA_input.grid(row = 1, column = 1, padx = 5, pady = 5)
+        self.descriptionA_input.grid(row = 1, column = 1, padx = 5, pady = 5)
         descriptionA_label.grid(row = 1, column = 0, padx = 5, pady = 5)
 
-        descriptionB_input = tk.Text(input_frame, height = 1, width = 15)
+        self.descriptionB_input = tk.Text(input_frame, height = 1, width = 15)
+        self.descriptionB_input.insert(tk.END, "DESCRIPTION")
         descriptionB_label = tk.Label(input_frame, text = "Description BOM B")
-        descriptionB_input.grid(row = 2, column = 1, padx = 5, pady = 5)
+        self.descriptionB_input.grid(row = 2, column = 1, padx = 5, pady = 5)
         descriptionB_label.grid(row = 2, column = 0, padx = 5, pady = 5)
 
-        quantityA_input = tk.Text(input_frame, height = 1, width = 15)
+        self.quantityA_input = tk.Text(input_frame, height = 1, width = 15)
+        self.quantityA_input.insert(tk.END, "QTY")
         quantityA_label = tk.Label(input_frame, text = "Quantity BOM A")
-        quantityA_input.grid(row = 1, column = 3, padx = 5, pady = 5)
+        self.quantityA_input.grid(row = 1, column = 3, padx = 5, pady = 5)
         quantityA_label.grid(row = 1, column = 2, padx = 5, pady = 5)
 
-        quantityB_input = tk.Text(input_frame, height = 1, width = 15)
+        self.quantityB_input = tk.Text(input_frame, height = 1, width = 15)
+        self.quantityB_input.insert(tk.END, "QTY")
         quantityB_label = tk.Label(input_frame, text = "Quantity BOM B")
-        quantityB_input.grid(row = 2, column = 3, padx = 5, pady = 5)
+        self.quantityB_input.grid(row = 2, column = 3, padx = 5, pady = 5)
         quantityB_label.grid(row = 2, column = 2, padx = 5, pady = 5)
 
-        ref_dsgA_input = tk.Text(input_frame, height = 1, width = 15)
+        self.ref_dsgA_input = tk.Text(input_frame, height = 1, width = 15)
+        self.ref_dsgA_input.insert(tk.END, "REF DGN")
         ref_dsgA_label = tk.Label(input_frame, text = "Reference Designator BOM A")
-        ref_dsgA_input.grid(row = 1, column = 5, padx = 5, pady = 5)
+        self.ref_dsgA_input.grid(row = 1, column = 5, padx = 5, pady = 5)
         ref_dsgA_label.grid(row = 1, column = 4, padx = 5, pady = 5)
 
-        ref_dsgB_input = tk.Text(input_frame, height = 1, width = 15)
+        self.ref_dsgB_input = tk.Text(input_frame, height = 1, width = 15)
+        self.ref_dsgB_input.insert(tk.END, "REF DGN")
         ref_dsgB_label = tk.Label(input_frame, text = "Reference Designator BOM B")
-        ref_dsgB_input.grid(row = 2, column = 5, padx = 5, pady = 5)
+        self.ref_dsgB_input.grid(row = 2, column = 5, padx = 5, pady = 5)
         ref_dsgB_label.grid(row = 2, column = 4, padx = 5, pady = 5)
 
-        manuA_input = tk.Text(input_frame, height = 1, width = 15)
+        self.manuA_input = tk.Text(input_frame, height = 1, width = 15)
+        self.manuA_input.insert(tk.END, "MFG 1")
         manuA_label = tk.Label(input_frame, text = "Manufacturer BOM A")
-        manuA_input.grid(row = 1, column = 7, padx = 5, pady = 5)
+        self.manuA_input.grid(row = 1, column = 7, padx = 5, pady = 5)
         manuA_label.grid(row = 1, column = 6, padx = 5, pady = 5)
 
-        manuB_input = tk.Text(input_frame, height = 1, width = 15)
+        self.manuB_input = tk.Text(input_frame, height = 1, width = 15)
+        self.manuB_input.insert(tk.END, "MFG 1")
         manuB_label = tk.Label(input_frame, text = "Manufacturer BOM B")
-        manuB_input.grid(row = 2, column = 7, padx = 5, pady = 5)
+        self.manuB_input.grid(row = 2, column = 7, padx = 5, pady = 5)
         manuB_label.grid(row = 2, column = 6, padx = 5, pady = 5)
         
-        mpnA_input = tk.Text(input_frame, height = 1, width = 15)
+        self.mpnA_input = tk.Text(input_frame, height = 1, width = 15)
+        self.mpnA_input.insert(tk.END, "MFG PN 1")
         mpnA_label = tk.Label(input_frame, text = "Manufacturer Part Number BOM A")
-        mpnA_input.grid(row = 1, column = 9, padx = 5, pady = 5)
+        self.mpnA_input.grid(row = 1, column = 9, padx = 5, pady = 5)
         mpnA_label.grid(row = 1, column = 8, padx = 5, pady = 5)
 
-        mpnB_input = tk.Text(input_frame, height = 1, width = 15)
+        self.mpnB_input = tk.Text(input_frame, height = 1, width = 15)
+        self.mpnB_input.insert(tk.END, "MFG PN 1")
         mpnB_label = tk.Label(input_frame, text = "Manufacturer Part Number BOM B")
-        mpnB_input.grid(row = 2, column = 9, padx = 5, pady = 5)
+        self.mpnB_input.grid(row = 2, column = 9, padx = 5, pady = 5)
         mpnB_label.grid(row = 2, column = 8, padx = 5, pady = 5)
  
-        headerA_input = tk.Text(input_frame, height = 1, width = 10)
-        headerA_label = tk.Label(input_frame, text = "Header *Row Number* BOM A")
-        headerA_input.grid(row = 3, column = 1, padx = 5, pady = (30, 5))
+        self.headerA_input = tk.Text(input_frame, height = 1, width = 10)
+        self.headerA_input.insert(tk.END, "2")
+        headerA_label = tk.Label(input_frame, text = "Header Row BOM A")
+        self.headerA_input.grid(row = 3, column = 1, padx = 5, pady = (30, 5))
         headerA_label.grid(row = 3, column = 0, padx = 5, pady = (30, 5))
 
-        headerB_input = tk.Text(input_frame, height = 1, width = 10)
-        headerB_label = tk.Label(input_frame, text = "Header *Row Number* BOM B")
-        headerB_input.grid(row = 4, column = 1, padx = 5, pady = 5)
+        self.headerB_input = tk.Text(input_frame, height = 1, width = 10)
+        self.headerB_input.insert(tk.END, "2")
+        headerB_label = tk.Label(input_frame, text = "Header Row BOM B")
+        self.headerB_input.grid(row = 4, column = 1, padx = 5, pady = 5)
         headerB_label.grid(row = 4, column = 0, padx = 5, pady = 5)
 
-        compare_button = tk.Button(input_frame, text = "COMPARE BOMs", command = compareBoms)
+        compare_button = tk.Button(input_frame, text = "COMPARE BOMs", command = self.compareBoms)
         compare_button.grid(row = 7, column = 0, columnspan = 10, padx = 10, pady = 10)
 
         # make frame to display the warnings
@@ -111,8 +123,8 @@ class BomCheckerMainWindow(tk.Tk):
         warnings_frame.pack_propagate(False)
         
         warnings_row = []
-        warnings_list = ["warning1", "warning2", "warning3"]
-        for index, value in enumerate(warnings_list):
+        self.warnings_list = ["warning1", "warning2", "warning3"]
+        for index, value in enumerate(self.warnings_list):
             warnings_row.append(ttk.Label(warnings_frame, text = value))
             warnings_row[index].grid()
 
@@ -130,18 +142,208 @@ class BomCheckerMainWindow(tk.Tk):
         flagged_rows_scrollx.pack(side = "bottom", fill = "x")
 
 
-    def uploadFileA(self, *_):
+
+        # Bom statuses (1 = loaded, 0 = not loaded)
+        self.bomA_status = 0
+        self.bomB_status = 0
+
+    
+
+
+
+
+
+
+    def uploadFileA(self, *_): # ISSUE: keyerror if the file is open when you press upload file button
         filename = filedialog.askopenfilename()
         self.bomA_label_value.set(filename)
 
-    def uploadFileB(self, *_):
+        self.descA = self.descriptionA_input.get("1.0", "end")
+        self.descA = self.descA.strip()
+        self.quantA = self.quantityA_input.get("1.0", "end")
+        self.quantA = self.quantA.strip()
+        self.ref_dsgA = self.ref_dsgA_input.get("1.0", "end")
+        self.ref_dsgA = self.ref_dsgA.strip()
+        self.manuA = self.manuA_input.get("1.0", "end")
+        self.manuA = self.manuA.strip()
+        self.mpnA = self.mpnA_input.get("1.0", "end")
+        self.mpnA = self.mpnA.strip()
+        self.headerA = self.headerA_input.get("1.0", "end")
+        self.headerA  = self.headerA.strip()
+
+        try:
+            self.bomA = pd.read_excel(filename, header = int(self.headerA) - 1) # want: also accept csv files
+            self.bomA.rename(columns = lambda x: x.strip(), inplace = True)
+            self.bomA_status = 1
+
+        except ValueError:
+            messagebox.showerror("Information", "The file you have chosen is invalid or your header value is invalid!")
+        
+        except FileNotFoundError:
+            messagebox.showerror("Information", f"No such file as {filename}")
+
+        
+
+    def uploadFileB(self, *_): 
         filename = filedialog.askopenfilename()
         self.bomB_label_value.set(filename)
-    
+
+        self.descB = self.descriptionB_input.get("1.0", "end")
+        self.descB = self.descB.strip()
+        self.quantB = self.quantityB_input.get("1.0", "end")
+        self.quantB = self.quantB.strip()
+        self.ref_dsgB = self.ref_dsgB_input.get("1.0", "end")
+        self.ref_dsgB = self.ref_dsgB.strip()
+        self.manuB = self.manuB_input.get("1.0", "end")
+        self.manuB = self.manuB.strip()
+        self.mpnB = self.mpnB_input.get("1.0", "end")
+        self.mpnB = self.mpnB.strip()
+        self.headerB = self.headerB_input.get("1.0", "end")
+        self.headerB  = self.headerB.strip()
+
+        try:
+            self.bomB = pd.read_excel(filename, header = int(self.headerB) - 1) # want: also accept csv files
+            self.bomB.rename(columns = lambda x: x.strip(), inplace = True)
+            self.bomB_status = 1
+
+        except ValueError:
+            messagebox.showerror("Information", "The file you have chosen is invalid or your header value is invalid!")
+        
+        except FileNotFoundError:
+            messagebox.showerror("Information", f"No such file as {filename}")
+
+
     def compareBoms(self, *_):
-        print("do stuff! :)))")
+        if self.bomA_status == 1 and self.bomB_status == 1: # want: make this throw an error if this doesn't evaluate
+            restructured_bomA = split_Ref_Designator_To_Separate_Columns(self.bomA, self.ref_dsgA, self.descA, self.quantA, self.manuA, self.mpnA)
+            restructured_bomB = split_Ref_Designator_To_Separate_Columns(self.bomB, self.ref_dsgB, self.descB, self.quantB, self.manuB, self.mpnB)
+            print(restructured_bomA)
+
+            check_Boms_Exact_Match(restructured_bomA, restructured_bomB)    
+            check_For_Duplicates(restructured_bomA, restructured_bomB)
+            test = compare_Ref_Designators(restructured_bomA, restructured_bomB)
+            print(test)
+
+
+
+
+    
+def split_Ref_Designator_To_Separate_Columns(input_bom, input_ref_dsg, input_description, input_quantity, input_manufacturer1, input_manufacturer_part_number1):
+    print(input_ref_dsg)
+    input_bom = input_bom.rename(columns={input_ref_dsg: "Ref Dsg", input_description: 'Description', input_quantity: 'Quantity', input_manufacturer1: 'Manufacturer 1', input_manufacturer_part_number1: 'Manufacturer 1 part number'}, errors = "raise")
+    print(input_bom.head())
+    input_bom_no_na = input_bom.dropna(subset=["Ref Dsg"], inplace=False) # drop any rows that are missing reference designators
+    if len(input_bom) != len(input_bom_no_na):
+        print("Warning, some rows were dropped due to missing reference designators")
+    input_bom_no_na = input_bom_no_na.fillna("<NA>") # replacing null values (floats) with certain string in case that becomes a problem later (it does if trying to apply strimg methods down a column with float NAs)
+    input_bom_no_na["Ref Dsg"] = input_bom_no_na["Ref Dsg"].str.replace(" ","") # get rid of any whitespace so that the next line splits cleanly
+
+    # use regex to insert a comma only when numbers > letters (ABC123,ABC123). Removes an extra comma if there is already a comma there, and removes the trailing comma that it inserts.
+    input_bom_no_na["Ref Dsg"] = input_bom_no_na["Ref Dsg"].astype(str)
+    input_bom_no_na["Ref Dsg"] = input_bom_no_na["Ref Dsg"].str.replace(r'[a-zA-Z]+[0-9]+', r'\g<0>,', regex=True)
+    input_bom_no_na["Ref Dsg"] = input_bom_no_na["Ref Dsg"].str.replace(",,", ",")
+    input_bom_no_na["Ref Dsg"] = input_bom_no_na["Ref Dsg"].str[:-1]
+    
+    split_columns = input_bom_no_na["Ref Dsg"].str.split(",", expand=True) # splits to new columns on the comma
+    print(split_columns)
+    ref_dsg_position = list(split_columns.columns.values)
+    input_bom_no_na = pd.concat([input_bom_no_na, split_columns], axis=1) 
+
+    input_bom_no_na["original_index"] = range(0, len(input_bom_no_na))
+    # using pivot longer to reformat. Does lose any columns not listed here. Will screw up quantities, do a check on that later?
+    input_bom_no_na = pd.melt(input_bom_no_na, id_vars=['original_index', 'Description', 'Quantity', 'Manufacturer 1', 'Manufacturer 1 part number'], value_vars = ref_dsg_position, value_name = "split_ref_designators", var_name = "ref_dsg_position") 
+    input_bom_no_na = input_bom_no_na.sort_values(by = ["split_ref_designators"])
+    input_bom_no_na.dropna(subset=['split_ref_designators'], inplace=True) 
+    input_bom_no_na = input_bom_no_na.reset_index() # need to do this for later comparisons
+    return(input_bom_no_na)
+
+
+# check if boms are exact match
+def check_Boms_Exact_Match(input_bomA, input_bom_B): 
+# check if exact match between boms
+    if len(input_bomA) == len(input_bom_B):
+        boms_exact_match = input_bomA == input_bom_B # only works if boms are same dimensions
+        if np.all(boms_exact_match['Description'] == True) and np.all(boms_exact_match["Quantity"] == True) and np.all(boms_exact_match["Manufacturer 1"] == True) and np.all(boms_exact_match['Manufacturer 1 part number'] == True) and np.all(boms_exact_match["ref_dsg_position"] == True) and np.all(boms_exact_match["split_ref_designators"] == True):
+            print("bomA and bomB are exact matches") # if overall boms match row for row (if so, then they're exact matches and no need to further check)
+        else:
+            print("bomA and bomB do not match")
+
+# check for dupolicate entries            
+def check_For_Duplicates(input_bomA, input_bomB):
+    if input_bomA['split_ref_designators'].duplicated().any():
+        duplicated = input_bomA['split_ref_designators'].duplicated()
+        list_of_duplicates = []
+        for index, item in enumerate(duplicated, start=0):
+            if item == True:
+                list_of_duplicates.append(input_bomA.loc[index]["split_ref_designators"])
+        print("The following reference designators in bomB have duplicated entries:", list_of_duplicates)
+    else: 
+        print("There are no duplicate reference designators in bomA")
+    
+    if input_bomB['split_ref_designators'].duplicated().any():
+        duplicated = input_bomB['split_ref_designators'].duplicated()
+        list_of_duplicates = []
+        for index, item in enumerate(duplicated, start=0):
+            if item == True:
+                list_of_duplicates.append(input_bomB.loc[index]["split_ref_designators"])
+        print("The following reference designators in bomB have duplicated entries:", list_of_duplicates)
+    else: 
+        print("There are no duplicate reference designators in bomB")
+
+
+# make sequence matcher function to use later
+def apply_sequence_matcher(s, c1, c2): 
+    return difflib.SequenceMatcher(None, s[c1], s[c2]).ratio()
         
-        
+#  Compare reference designators
+def compare_Ref_Designators(input_bomA, input_bom_B):
+    # check if missing
+    merged_boms = input_bomA.merge(input_bom_B, how='inner', on="split_ref_designators", sort=True, suffixes=('_A', '_B'), copy=None, indicator=False, validate=None)
+    in_bomA_not_in_bomB = ~input_bomA["split_ref_designators"].isin(merged_boms["split_ref_designators"])
+    list_ref_dsg_not_in_bomB = []
+    for index, item in enumerate(in_bomA_not_in_bomB, start=0): 
+        if item == True:
+            list_ref_dsg_not_in_bomB.append(input_bomA.loc[index]["split_ref_designators"])
+    if len(list_ref_dsg_not_in_bomB) != 0:
+        print("The following reference designators are in bomA but not in bomB:", list_ref_dsg_not_in_bomB)
+
+    in_bomB_not_in_bomA = ~input_bom_B["split_ref_designators"].isin(merged_boms["split_ref_designators"])
+    list_ref_dsg_not_in_bomA = []
+    for index, item in enumerate(in_bomB_not_in_bomA, start=0):
+        if item == True:
+            list_ref_dsg_not_in_bomA.append(input_bom_B.loc[index]["split_ref_designators"])
+    if len(list_ref_dsg_not_in_bomA) != 0:
+        print("The following reference designators are in bomB but not in bomA:", list_ref_dsg_not_in_bomA)
+
+    # check if stuff doesn't match
+    merged_boms[["Description_A", "Description_B", "Manufacturer 1_A", "Manufacturer 1_B", "Manufacturer 1 part number_A", "Manufacturer 1 part number_B"]] = merged_boms[["Description_A", "Description_B", "Manufacturer 1_A", "Manufacturer 1_B", "Manufacturer 1 part number_A", "Manufacturer 1 part number_B"]].astype(str) 
+    merged_boms['Description_match_ratio'] = merged_boms.apply(partial(apply_sequence_matcher, c1='Description_A', c2='Description_B'), axis=1)
+    merged_boms['manufacturer1_match_ratio'] = merged_boms.apply(partial(apply_sequence_matcher, c1='Manufacturer 1_A', c2='Manufacturer 1_B'), axis=1)
+    merged_boms['manufacturer1_part_number_match_ratio'] = merged_boms.apply(partial(apply_sequence_matcher, c1="Manufacturer 1 part number_A", c2="Manufacturer 1 part number_B"), axis=1)
+
+    flagged_rows = []
+    for index, item in enumerate(merged_boms['split_ref_designators'], start=0): 
+        temp_index = merged_boms.index[merged_boms['split_ref_designators'] == item].tolist()
+        if len(temp_index) == 1:
+            if merged_boms.loc[temp_index]["Description_A"].tolist() != merged_boms.loc[temp_index]["Description_B"].tolist(): 
+                print("description for", item, "doesn't match!")
+            if merged_boms.loc[temp_index]["Quantity_A"].tolist() != merged_boms.loc[temp_index]["Quantity_B"].tolist(): 
+                print("quantity for", item, "doesn't match!")
+                flagged_rows = flagged_rows + temp_index
+            if merged_boms.loc[temp_index]["Manufacturer 1_A"].tolist() != merged_boms.loc[temp_index]["Manufacturer 1_B"].tolist(): 
+                print("manufacturer1 for", item, "doesn't match!")
+                flagged_rows = flagged_rows + temp_index
+            if merged_boms.loc[temp_index]["Manufacturer 1 part number_A"].tolist() != merged_boms.loc[temp_index]["Manufacturer 1 part number_B"].tolist():
+                print("manufacturer1 part number for", item, "doesn't match!")
+                flagged_rows = flagged_rows + temp_index
+        if len(temp_index) > 1:
+            flagged_rows = flagged_rows + temp_index
+    flagged_rows = set(flagged_rows)
+    flagged_rows = list(flagged_rows)
+    flagged_merged_bom_rows = merged_boms.loc[flagged_rows]
+    flagged_merged_bom_rows.drop(['index_A', 'original_index_A', "ref_dsg_position_A", 'index_B', 'original_index_B', "ref_dsg_position_B"], axis=1, inplace = True)
+    flagged_merged_bom_rows = flagged_merged_bom_rows[['split_ref_designators', 'Description_A', 'Quantity_A', 'Manufacturer 1_A', 'Manufacturer 1 part number_A', 'Description_B', 'Quantity_B', 'Manufacturer 1_B', 'Manufacturer 1 part number_B', "Description_match_ratio", "manufacturer1_match_ratio", "manufacturer1_part_number_match_ratio"]]
+    return(flagged_merged_bom_rows)
 
 
 
@@ -149,5 +351,6 @@ class BomCheckerMainWindow(tk.Tk):
 # https://stackoverflow.com/questions/64298669/how-to-show-pandas-data-frame-in-tkinter-gui-inside-the-gui-screen
 # https://www.youtube.com/watch?v=PgLjwl6Br0kS
 
+# Note: uploading BOM > change header index does not update, you have to refresh by hitting upload bom
 
 main()
