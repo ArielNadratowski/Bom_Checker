@@ -7,6 +7,8 @@ import numpy as np
 #import re
 import difflib
 from functools import partial
+from tableview import tableview
+
 
 def main():
 
@@ -124,17 +126,19 @@ class BomCheckerMainWindow(tk.Tk):
         
 
         # frame for the flagged rows from the BOMs
-        flagged_rows_frame = tk.LabelFrame(self, text = "Flagged Rows")
-        flagged_rows_frame.pack(side = "bottom", fill = "both", expand = True, padx = 10, pady = 10)
+        self.flagged_rows_frame = tk.LabelFrame(self, text = "Flagged Rows")
+        self.flagged_rows_frame.pack(side = "bottom", fill = "both", expand = True, padx = 10, pady = 10)
 
-        # treeview for the actual data
-        self.flagged_rows = ttk.Treeview(flagged_rows_frame)
-        self.flagged_rows.place(relheight = 1, relwidth = 1)
-        flagged_rows_scrolly = tk.Scrollbar(flagged_rows_frame, orient = "vertical", command = self.flagged_rows.yview)
-        flagged_rows_scrollx = tk.Scrollbar(flagged_rows_frame, orient = "horizontal", command = self.flagged_rows.xview)
-        self.flagged_rows.configure(xscrollcommand = flagged_rows_scrollx.set, yscrollcommand = flagged_rows_scrolly.set)
-        flagged_rows_scrolly.pack(side = "right", fill = "y")
-        flagged_rows_scrollx.pack(side = "bottom", fill = "x")
+        ## treeview for the actual data
+        #self.flagged_rows = ttk.Treeview(flagged_rows_frame)
+        #self.flagged_rows.place(relheight = 1, relwidth = 1)
+        #flagged_rows_scrolly = tk.Scrollbar(flagged_rows_frame, orient = "vertical", command = self.flagged_rows.yview)
+        #flagged_rows_scrollx = tk.Scrollbar(flagged_rows_frame, orient = "horizontal", command = self.flagged_rows.xview)
+        #self.flagged_rows.configure(xscrollcommand = flagged_rows_scrollx.set, yscrollcommand = flagged_rows_scrolly.set)
+        #flagged_rows_scrolly.pack(side = "right", fill = "y")
+        #flagged_rows_scrollx.pack(side = "bottom", fill = "x")
+
+        
 
 
 
@@ -219,15 +223,44 @@ class BomCheckerMainWindow(tk.Tk):
             check_Boms_Exact_Match(warnings_list, restructured_bomA, restructured_bomB)    
             check_For_Duplicates(warnings_list, restructured_bomA, restructured_bomB)
             flagged_rows_temp_storage = compare_Ref_Designators(warnings_list, restructured_bomA, restructured_bomB)
-            self.flagged_rows["column"] = list(flagged_rows_temp_storage.columns)
-            self.flagged_rows["show"]  = "headings"
-            for column in self.flagged_rows["columns"]:
-                self.flagged_rows.heading(column, text = column)
+            #self.flagged_rows["column"] = list(flagged_rows_temp_storage.columns)
+            #self.flagged_rows["show"]  = "headings"
+            #for column in self.flagged_rows["columns"]:
+            #    self.flagged_rows.heading(column, text = column)
 
-            flagged_rows_temp_storage_rows = flagged_rows_temp_storage.to_numpy().tolist()
-            for row in flagged_rows_temp_storage_rows:
-                self.flagged_rows.insert("", "end", values = row)
+            #flagged_rows_temp_storage_rows = flagged_rows_temp_storage.to_numpy().tolist()
+            #for row in flagged_rows_temp_storage_rows:
+            #    self.flagged_rows.insert("", "end", values = row)
 
+            # table view implementation
+            column_header = list(flagged_rows_temp_storage.columns.values)
+            column_width = [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+            color_map = {
+                'header_background': 'grey70',
+                'header_foreground': 'black',
+                'tree_background': 'white',
+                'tree_foreground': 'grey',
+                'item_foreground': 'black',
+                'tree_erase_background': 'white',
+                'selected_row_bg_color': 'grey90',
+                'selected_row_text_color': 'black',
+                'separator_color':'grey'
+            }
+
+            tableview.setup_columns(root = self, window = self.flagged_rows_frame, column_headers = column_header, column_widths = column_width, table_height = 20, frame_height = 650, column_height = 200, header_height = 49, table_color_map = color_map)
+            
+            # using for loops to populate the table from the pandas dataframe
+            number_rows = len(flagged_rows_temp_storage.index)
+            for i in range(number_rows):
+                column_number = 0
+                row_as_list = flagged_rows_temp_storage.iloc[i].tolist()
+                for item in row_as_list:
+                    tableview.insert_item(column_number, text = item)
+                    column_number += 1
+
+
+            tableview.pack()
+            tableview.highlight_cell(column = 1, row = 0, bg = "yellow", fg = "red")
             
 
         for index, value in enumerate(warnings_list):
@@ -250,7 +283,6 @@ def split_Ref_Designator_To_Separate_Columns(warnings, input_bom, input_ref_dsg,
     input_bom_no_na["Ref Dsg"] = input_bom_no_na["Ref Dsg"].str[:-1]
     
     split_columns = input_bom_no_na["Ref Dsg"].str.split(",", expand=True) # splits to new columns on the comma
-    print(split_columns)
     ref_dsg_position = list(split_columns.columns.values)
     input_bom_no_na = pd.concat([input_bom_no_na, split_columns], axis=1) 
 
@@ -345,13 +377,16 @@ def compare_Ref_Designators(warnings, input_bomA, input_bom_B):
     flagged_merged_bom_rows = merged_boms.loc[flagged_rows]
     flagged_merged_bom_rows.drop(['index_A', 'original_index_A', "ref_dsg_position_A", 'index_B', 'original_index_B', "ref_dsg_position_B"], axis=1, inplace = True)
     flagged_merged_bom_rows = flagged_merged_bom_rows[['split_ref_designators', 'Description_A', 'Quantity_A', 'Manufacturer 1_A', 'Manufacturer 1 part number_A', 'Description_B', 'Quantity_B', 'Manufacturer 1_B', 'Manufacturer 1 part number_B', "Description_match_ratio", "manufacturer1_match_ratio", "manufacturer1_part_number_match_ratio"]]
+    flagged_merged_bom_rows.rename(columns = {'split_ref_designators': 'Ref Dsg'}, inplace = True)
     return(flagged_merged_bom_rows)
 
 
 
-# https://stackoverflow.com/questions/44798950/how-to-display-a-dataframe-in-tkinter
-# https://stackoverflow.com/questions/64298669/how-to-show-pandas-data-frame-in-tkinter-gui-inside-the-gui-screen
+
+# https://stackoverflow.com/questions/44798950/how-to-display-a-dataframe-in-tkinter - pandas table maybe useful
 # https://www.youtube.com/watch?v=PgLjwl6Br0kS
+# https://stackoverflow.com/questions/48358084/how-to-change-the-foreground-or-background-colour-of-a-selected-cell-in-tkinter
+# https://github.com/Deagek/tableview/blob/main/README.md
 
 # Note: uploading BOM > change header index does not update, you have to refresh by hitting upload bom
 
