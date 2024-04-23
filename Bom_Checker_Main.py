@@ -129,31 +129,12 @@ class BomCheckerMainWindow(tk.Tk):
         self.flagged_rows_frame = tk.LabelFrame(self, text = "Flagged Rows")
         self.flagged_rows_frame.pack(side = "bottom", fill = "both", expand = True, padx = 10, pady = 10)
 
-        ## treeview for the actual data
-        #self.flagged_rows = ttk.Treeview(flagged_rows_frame)
-        #self.flagged_rows.place(relheight = 1, relwidth = 1)
-        #flagged_rows_scrolly = tk.Scrollbar(flagged_rows_frame, orient = "vertical", command = self.flagged_rows.yview)
-        #flagged_rows_scrollx = tk.Scrollbar(flagged_rows_frame, orient = "horizontal", command = self.flagged_rows.xview)
-        #self.flagged_rows.configure(xscrollcommand = flagged_rows_scrollx.set, yscrollcommand = flagged_rows_scrolly.set)
-        #flagged_rows_scrolly.pack(side = "right", fill = "y")
-        #flagged_rows_scrollx.pack(side = "bottom", fill = "x")
-
-        
-
-
-
         # Bom statuses (1 = loaded, 0 = not loaded)
         self.bomA_status = 0
         self.bomB_status = 0
 
-    
 
-
-
-
-
-
-    def uploadFileA(self, *_): # ISSUE: keyerror if the file is open when you press upload file button
+    def uploadFileA(self, *_): 
         filename = filedialog.askopenfilename()
         self.bomA_label_value.set(filename)
 
@@ -182,7 +163,6 @@ class BomCheckerMainWindow(tk.Tk):
             messagebox.showerror("Information", f"No such file as {filename}")
 
         
-
     def uploadFileB(self, *_): 
         filename = filedialog.askopenfilename()
         self.bomB_label_value.set(filename)
@@ -225,14 +205,6 @@ class BomCheckerMainWindow(tk.Tk):
             check_Boms_Exact_Match(warnings_list, restructured_bomA, restructured_bomB)    
             check_For_Duplicates(warnings_list, restructured_bomA, restructured_bomB)
             flagged_rows_temp_storage = compare_Ref_Designators(warnings_list, highlight_column_numbers, highlight_row_numbers, restructured_bomA, restructured_bomB)
-            #self.flagged_rows["column"] = list(flagged_rows_temp_storage.columns)
-            #self.flagged_rows["show"]  = "headings"
-            #for column in self.flagged_rows["columns"]:
-            #    self.flagged_rows.heading(column, text = column)
-
-            #flagged_rows_temp_storage_rows = flagged_rows_temp_storage.to_numpy().tolist()
-            #for row in flagged_rows_temp_storage_rows:
-            #    self.flagged_rows.insert("", "end", values = row)
 
             # table view implementation
             column_header = list(flagged_rows_temp_storage.columns.values)
@@ -250,7 +222,6 @@ class BomCheckerMainWindow(tk.Tk):
             }
 
             tableview.setup_columns(root = self, window = self.flagged_rows_frame, column_headers = column_header, column_widths = column_width, table_height = 20, frame_height = 650, column_height = 200, header_height = 49, table_color_map = color_map)
-            
             # using for loops to populate the table from the pandas dataframe
             number_rows = len(flagged_rows_temp_storage.index)
             for i in range(number_rows):
@@ -259,15 +230,13 @@ class BomCheckerMainWindow(tk.Tk):
                 for item in row_as_list:
                     tableview.insert_item(column_number, text = item)
                     column_number += 1
-
-
             tableview.pack()
 
-
+            # highlight cells that are different
             for c, r in zip(highlight_column_numbers, highlight_row_numbers):
                 tableview.highlight_cell(column = c, row = r, bg = "yellow", fg = "red")
             
-
+            # show warnings
             for index, value in enumerate(warnings_list):
                 warnings_row.append(ttk.Label(self.warnings_frame, text = value, foreground = "red"))
                 warnings_row[index].grid()
@@ -318,7 +287,7 @@ def check_For_Duplicates(warnings, input_bomA, input_bomB):
         for index, item in enumerate(duplicated, start=0):
             if item == True:
                 list_of_duplicates.append(input_bomA.loc[index]["split_ref_designators"])
-        warnings.append("The following reference designators in bomB have duplicated entries: " + str(list_of_duplicates))
+        warnings.append("The following reference designators in bomB have duplicated reference designators: " + str(list_of_duplicates))
     
     if input_bomB['split_ref_designators'].duplicated().any():
         duplicated = input_bomB['split_ref_designators'].duplicated()
@@ -326,7 +295,7 @@ def check_For_Duplicates(warnings, input_bomA, input_bomB):
         for index, item in enumerate(duplicated, start=0):
             if item == True:
                 list_of_duplicates.append(input_bomB.loc[index]["split_ref_designators"])
-        warnings.append("The following reference designators in bomB have duplicated entries: " + str(list_of_duplicates))
+        warnings.append("The following reference designators in bomB have duplicated reference designators: " + str(list_of_duplicates))
 
 
 # make sequence matcher function to use later
@@ -336,8 +305,8 @@ def apply_sequence_matcher(s, c1, c2):
 #  Compare reference designators
 def compare_Ref_Designators(warnings, columns, rows, input_bomA, input_bom_B):
     # check if missing
-    merged_boms = input_bomA.merge(input_bom_B, how='inner', on="split_ref_designators", sort=True, suffixes=('_A', '_B'), copy=None, indicator=False, validate=None)
-    in_bomA_not_in_bomB = ~input_bomA["split_ref_designators"].isin(merged_boms["split_ref_designators"])
+    merged_boms = input_bomA.merge(input_bom_B, how='outer', on="split_ref_designators", sort=True, suffixes=('_A', '_B'), copy=None, indicator=False, validate=None)
+    in_bomA_not_in_bomB = ~input_bomA["split_ref_designators"].isin(input_bom_B["split_ref_designators"])
     list_ref_dsg_not_in_bomB = []
     for index, item in enumerate(in_bomA_not_in_bomB, start=0): 
         if item == True:
@@ -345,7 +314,7 @@ def compare_Ref_Designators(warnings, columns, rows, input_bomA, input_bom_B):
     if len(list_ref_dsg_not_in_bomB) != 0:
         warnings.append("The following reference designators are in bomA but not in bomB: " + str(list_ref_dsg_not_in_bomB))
 
-    in_bomB_not_in_bomA = ~input_bom_B["split_ref_designators"].isin(merged_boms["split_ref_designators"])
+    in_bomB_not_in_bomA = ~input_bom_B["split_ref_designators"].isin(input_bomA["split_ref_designators"])
     list_ref_dsg_not_in_bomA = []
     for index, item in enumerate(in_bomB_not_in_bomA, start=0):
         if item == True:
@@ -360,35 +329,37 @@ def compare_Ref_Designators(warnings, columns, rows, input_bomA, input_bom_B):
     merged_boms['manufacturer1_part_number_match_ratio'] = merged_boms.apply(partial(apply_sequence_matcher, c1="Manufacturer 1 part number_A", c2="Manufacturer 1 part number_B"), axis=1)
 
     flagged_rows = []
+    temp_row = 0
     for index, item in enumerate(merged_boms['split_ref_designators'], start=0): 
         temp_index = merged_boms.index[merged_boms['split_ref_designators'] == item].tolist()
-        temp_row = 0
+        increment = 0
         if len(temp_index) == 1:
             if merged_boms.loc[temp_index]["Description_A"].tolist() != merged_boms.loc[temp_index]["Description_B"].tolist(): 
-                warnings.append("description for " + str(item) + " doesn't match!")
                 columns.extend([2, 6])
                 rows.extend([temp_row, temp_row])
                 flagged_rows = flagged_rows + temp_index
+                increment = 1
             if merged_boms.loc[temp_index]["Quantity_A"].tolist() != merged_boms.loc[temp_index]["Quantity_B"].tolist(): 
-                warnings.append("quantity for " + str(item) + " doesn't match!")
                 columns.extend([3, 7])
                 rows.extend([temp_row, temp_row])
                 flagged_rows = flagged_rows + temp_index
+                increment = 1
             if merged_boms.loc[temp_index]["Manufacturer 1_A"].tolist() != merged_boms.loc[temp_index]["Manufacturer 1_B"].tolist(): 
-                warnings.append("manufacturer1 for " + str(item) + " doesn't match!")
                 columns.extend([4, 8])
                 rows.extend([temp_row, temp_row])
                 flagged_rows = flagged_rows + temp_index
+                increment = 1
             if merged_boms.loc[temp_index]["Manufacturer 1 part number_A"].tolist() != merged_boms.loc[temp_index]["Manufacturer 1 part number_B"].tolist():
-                warnings.append("manufacturer1 part number for " + str(item) + " doesn't match!")
-                columns.extend(5, 9)
+                columns.extend([5, 9])
                 rows.extend([temp_row, temp_row])
                 flagged_rows = flagged_rows + temp_index
-            temp_row += 1
+                increment = 1
         if len(temp_index) > 1:
             flagged_rows = flagged_rows + temp_index
-            columns.extend(range(1, 12))
+            columns.extend(range(1, 13))
             rows.extend([temp_row] * 12)
+            increment = 1
+        if increment == 1:
             temp_row += 1
             
     flagged_rows = set(flagged_rows)
@@ -399,13 +370,6 @@ def compare_Ref_Designators(warnings, columns, rows, input_bomA, input_bom_B):
     flagged_merged_bom_rows.rename(columns = {'split_ref_designators': 'Ref Dsg'}, inplace = True)
     return(flagged_merged_bom_rows)
 
-
-
-
-# https://stackoverflow.com/questions/44798950/how-to-display-a-dataframe-in-tkinter - pandas table maybe useful
-# https://www.youtube.com/watch?v=PgLjwl6Br0kS
-# https://stackoverflow.com/questions/48358084/how-to-change-the-foreground-or-background-colour-of-a-selected-cell-in-tkinter
-# https://github.com/Deagek/tableview/blob/main/README.md
 
 # Note: uploading BOM > change header index does not update, you have to refresh by hitting upload bom
 
