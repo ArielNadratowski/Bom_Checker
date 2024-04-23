@@ -216,13 +216,15 @@ class BomCheckerMainWindow(tk.Tk):
         if self.bomA_status == 1 and self.bomB_status == 1: # want: make this throw an error if this doesn't evaluate
             warnings_row = []
             warnings_list = []
+            highlight_column_numbers = []
+            highlight_row_numbers = []
 
             restructured_bomA = split_Ref_Designator_To_Separate_Columns(warnings_list, self.bomA, self.ref_dsgA, self.descA, self.quantA, self.manuA, self.mpnA)
             restructured_bomB = split_Ref_Designator_To_Separate_Columns(warnings_list, self.bomB, self.ref_dsgB, self.descB, self.quantB, self.manuB, self.mpnB)
             
             check_Boms_Exact_Match(warnings_list, restructured_bomA, restructured_bomB)    
             check_For_Duplicates(warnings_list, restructured_bomA, restructured_bomB)
-            flagged_rows_temp_storage = compare_Ref_Designators(warnings_list, restructured_bomA, restructured_bomB)
+            flagged_rows_temp_storage = compare_Ref_Designators(warnings_list, highlight_column_numbers, highlight_row_numbers, restructured_bomA, restructured_bomB)
             #self.flagged_rows["column"] = list(flagged_rows_temp_storage.columns)
             #self.flagged_rows["show"]  = "headings"
             #for column in self.flagged_rows["columns"]:
@@ -260,12 +262,15 @@ class BomCheckerMainWindow(tk.Tk):
 
 
             tableview.pack()
-            tableview.highlight_cell(column = 1, row = 0, bg = "yellow", fg = "red")
+
+
+            for c, r in zip(highlight_column_numbers, highlight_row_numbers):
+                tableview.highlight_cell(column = c, row = r, bg = "yellow", fg = "red")
             
 
-        for index, value in enumerate(warnings_list):
-            warnings_row.append(ttk.Label(self.warnings_frame, text = value))
-            warnings_row[index].grid()
+            for index, value in enumerate(warnings_list):
+                warnings_row.append(ttk.Label(self.warnings_frame, text = value, foreground = "red"))
+                warnings_row[index].grid()
             
             
 
@@ -329,7 +334,7 @@ def apply_sequence_matcher(s, c1, c2):
     return difflib.SequenceMatcher(None, s[c1], s[c2]).ratio()
         
 #  Compare reference designators
-def compare_Ref_Designators(warnings, input_bomA, input_bom_B):
+def compare_Ref_Designators(warnings, columns, rows, input_bomA, input_bom_B):
     # check if missing
     merged_boms = input_bomA.merge(input_bom_B, how='inner', on="split_ref_designators", sort=True, suffixes=('_A', '_B'), copy=None, indicator=False, validate=None)
     in_bomA_not_in_bomB = ~input_bomA["split_ref_designators"].isin(merged_boms["split_ref_designators"])
@@ -357,21 +362,35 @@ def compare_Ref_Designators(warnings, input_bomA, input_bom_B):
     flagged_rows = []
     for index, item in enumerate(merged_boms['split_ref_designators'], start=0): 
         temp_index = merged_boms.index[merged_boms['split_ref_designators'] == item].tolist()
+        temp_row = 0
         if len(temp_index) == 1:
             if merged_boms.loc[temp_index]["Description_A"].tolist() != merged_boms.loc[temp_index]["Description_B"].tolist(): 
                 warnings.append("description for " + str(item) + " doesn't match!")
+                columns.extend([2, 6])
+                rows.extend([temp_row, temp_row])
                 flagged_rows = flagged_rows + temp_index
             if merged_boms.loc[temp_index]["Quantity_A"].tolist() != merged_boms.loc[temp_index]["Quantity_B"].tolist(): 
                 warnings.append("quantity for " + str(item) + " doesn't match!")
+                columns.extend([3, 7])
+                rows.extend([temp_row, temp_row])
                 flagged_rows = flagged_rows + temp_index
             if merged_boms.loc[temp_index]["Manufacturer 1_A"].tolist() != merged_boms.loc[temp_index]["Manufacturer 1_B"].tolist(): 
                 warnings.append("manufacturer1 for " + str(item) + " doesn't match!")
+                columns.extend([4, 8])
+                rows.extend([temp_row, temp_row])
                 flagged_rows = flagged_rows + temp_index
             if merged_boms.loc[temp_index]["Manufacturer 1 part number_A"].tolist() != merged_boms.loc[temp_index]["Manufacturer 1 part number_B"].tolist():
                 warnings.append("manufacturer1 part number for " + str(item) + " doesn't match!")
+                columns.extend(5, 9)
+                rows.extend([temp_row, temp_row])
                 flagged_rows = flagged_rows + temp_index
+            temp_row += 1
         if len(temp_index) > 1:
             flagged_rows = flagged_rows + temp_index
+            columns.extend(range(1, 12))
+            rows.extend([temp_row] * 12)
+            temp_row += 1
+            
     flagged_rows = set(flagged_rows)
     flagged_rows = list(flagged_rows)
     flagged_merged_bom_rows = merged_boms.loc[flagged_rows]
