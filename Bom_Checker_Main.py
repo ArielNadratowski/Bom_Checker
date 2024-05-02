@@ -119,6 +119,12 @@ class BomCheckerMainWindow(tk.Tk):
         compare_button = tk.Button(input_frame, text = "COMPARE BOMs", command = self.compareBoms)
         compare_button.grid(row = 7, column = 0, columnspan = 10, padx = 10, pady = 10)
 
+        search_button = tk.Button(input_frame, text = 'Search Ref Dsg', command = self.searchRefDsg)
+        search_button.grid(row = 8, column = 10, padx = 10, pady = 10)
+
+        self.search_input = tk.Text(input_frame, height = 1, width = 10)
+        self.search_input.grid(row = 8, column = 9, padx = 10, pady = 10)
+
         # make frame to display the warnings
         self.warnings_frame = tk.Frame(self)
         self.warnings_frame.pack(side = "top", padx = 10, pady = 10)
@@ -133,8 +139,10 @@ class BomCheckerMainWindow(tk.Tk):
         self.bomA_status = 0
         self.bomB_status = 0
 
+        self.merged_boms = []
+
         # table view implementation
-        header_list = ['split_ref_designators', 'Description_A', 'Quantity_A', 'Manufacturer_A', 'Manufacturer Part Number_A', 'Description_B', 'Quantity_B', 'Manufacturer_B', 'Manufacturer Part Number_B', "Desc_match_ratio", "MFG_match_ratio", "MPN_match_ratio"]
+        header_list = ['Ref Dsg', 'Description_A', 'Quantity_A', 'Manufacturer_A', 'Manufacturer Part Number_A', 'Description_B', 'Quantity_B', 'Manufacturer_B', 'Manufacturer Part Number_B', "Desc_match_ratio", "MFG_match_ratio", "MPN_match_ratio"]
         column_header = header_list
         column_width = [55, 85, 75, 100, 170, 85, 75, 100, 170, 110, 110, 110]
         color_map = {
@@ -225,6 +233,8 @@ class BomCheckerMainWindow(tk.Tk):
             flagged_rows_temp_storage = compare_Ref_Designators(warnings_list, highlight_column_numbers, highlight_row_numbers, restructured_bomA, restructured_bomB)
 
             tableview.clear()
+
+            # fill in table
             number_rows = len(flagged_rows_temp_storage.index)
             for i in range(number_rows):
                 column_number = 0
@@ -243,6 +253,35 @@ class BomCheckerMainWindow(tk.Tk):
             for index, value in enumerate(warnings_list):
                 warnings_row.append(ttk.Label(self.warnings_frame, text = value, foreground = "red"))
                 warnings_row[index].grid()
+
+            # probably best place to stick this due to scoping
+            self.merged_boms = restructured_bomA.merge(restructured_bomB, how='outer', on="split_ref_designators", sort=True, suffixes=('_A', '_B'), copy=None, indicator=False, validate=None)
+            self.merged_boms.drop(['index_A', 'original_index_A', "ref_dsg_position_A", 'index_B', 'original_index_B', "ref_dsg_position_B"], axis=1, inplace = True)
+            self.merged_boms = self.merged_boms[['split_ref_designators', 'Description_A', 'Quantity_A', 'Manufacturer_A', 'Manufacturer Part Number_A', 'Description_B', 'Quantity_B', 'Manufacturer_B', 'Manufacturer Part Number_B']]
+            self.merged_boms.rename(columns = {'split_ref_designators': 'Ref Dsg'}, inplace = True)
+            col = self.merged_boms.pop("Ref Dsg")
+            self.merged_boms.insert(0, col.name, col)
+
+
+    def searchRefDsg(self):
+        tableview.clear()
+
+        search_text = self.search_input.get("1.0", "end")
+        search_text = search_text.strip()
+
+        self.merged_boms['Ref Dsg'] = self.merged_boms['Ref Dsg'].str.strip()
+
+        searched_rows = self.merged_boms[self.merged_boms['Ref Dsg'] == search_text]
+
+        # fill in table 
+        number_rows = len(searched_rows.index)
+        for i in range(number_rows):
+            column_number = 0
+            row_as_list = searched_rows.iloc[i].tolist()
+            for item in row_as_list:
+                tableview.insert_item(column_number, text = item)
+                column_number += 1
+
 
 
       
@@ -365,13 +404,16 @@ def compare_Ref_Designators(warnings, columns, rows, input_bomA, input_bom_B):
             increment = 1
         if increment == 1:
             temp_row += 1
-            
+       
     flagged_rows = set(flagged_rows)
     flagged_rows = list(flagged_rows)
+    flagged_rows.sort()
+    print(flagged_rows)
     flagged_merged_bom_rows = merged_boms.loc[flagged_rows]
     flagged_merged_bom_rows.drop(['index_A', 'original_index_A', "ref_dsg_position_A", 'index_B', 'original_index_B', "ref_dsg_position_B"], axis=1, inplace = True)
     flagged_merged_bom_rows = flagged_merged_bom_rows[['split_ref_designators', 'Description_A', 'Quantity_A', 'Manufacturer_A', 'Manufacturer Part Number_A', 'Description_B', 'Quantity_B', 'Manufacturer_B', 'Manufacturer Part Number_B', "Desc_match_ratio", "MFG_match_ratio", "MPN_match_ratio"]]
     flagged_merged_bom_rows.rename(columns = {'split_ref_designators': 'Ref Dsg'}, inplace = True)
+    pd.set_option('display.max_rows', None)
     return(flagged_merged_bom_rows)
 
 
