@@ -3,6 +3,7 @@ from tableview import tableview
 from tkinter import filedialog, messagebox, ttk
 import pandas as pd
 import Support_Functions_Main_Window_Class
+import Button_Classes
 
 class BomCheckerMainWindow(tk.Tk):
     def __init__(self):
@@ -17,102 +18,105 @@ class BomCheckerMainWindow(tk.Tk):
         input_frame = tk.Frame(self)
         input_frame.pack(side = 'top')
 
-        # Upload bom buttons and their respective labels
-
-        self.bomA_label_value = tk.StringVar(input_frame, 'Please upload file')
-        bomA_button = tk.Button(input_frame, text = 'upload BOM A', command = self.uploadFileA)
-        self.bomA_label = tk.Label(input_frame, textvariable=self.bomA_label_value)
-        bomA_button.grid(row = 3, column = 2, padx = 5, pady = (30, 5))
-        self.bomA_label.grid(row = 3, column = 3, columnspan = 7, sticky = 'W', padx = 5, pady = (30, 5))
-
-        self.bomB_label_value = tk.StringVar(input_frame, 'Please upload file')
-        bomB_button = tk.Button(input_frame, text = 'upload BOM B', command = self.uploadFileB)
-        self.bomB_label = tk.Label(input_frame, textvariable=self.bomB_label_value)   
-        bomB_button.grid(row = 4, column = 2)
-        self.bomB_label.grid(row = 4, column = 3, columnspan = 7, sticky = 'W', padx = 5, pady = 5)
-
-        # take input for what columns are what
+        # directions for how to use
         instructions = tk.Label(input_frame, text = 'Please type the following column names EXACTLY as labeled in their respective BOM file', font = ('Segoe UI', 11, 'bold'))
         instructions.grid(row = 0, column = 0, columnspan = 10, sticky = 'W', padx = 5, pady = 5)
 
-        self.descriptionA_input = tk.Text(input_frame, height =1, width = 15)
-        self.descriptionA_input.insert(tk.END, 'DESCRIPTION')
-        descriptionA_label = tk.Label(input_frame, text = 'Description BOM A')
-        self.descriptionA_input.grid(row = 1, column = 1, padx = 5, pady = 5)
-        descriptionA_label.grid(row = 1, column = 0, padx = 5, pady = 5)
+        # set up values for buttons with labels
+        upload_bomA_button_coord = (3, 2)
+        upload_bomB_button_coord = (4, 2)
 
-        self.descriptionB_input = tk.Text(input_frame, height = 1, width = 15)
-        self.descriptionB_input.insert(tk.END, 'DESCRIPTION')
-        descriptionB_label = tk.Label(input_frame, text = 'Description BOM B')
-        self.descriptionB_input.grid(row = 2, column = 1, padx = 5, pady = 5)
-        descriptionB_label.grid(row = 2, column = 0, padx = 5, pady = 5)
-
-        self.quantityA_input = tk.Text(input_frame, height = 1, width = 15)
-        self.quantityA_input.insert(tk.END, 'QTY')
-        quantityA_label = tk.Label(input_frame, text = 'Quantity BOM A')
-        self.quantityA_input.grid(row = 1, column = 3, padx = 5, pady = 5)
-        quantityA_label.grid(row = 1, column = 2, padx = 5, pady = 5)
-
-        self.quantityB_input = tk.Text(input_frame, height = 1, width = 15)
-        self.quantityB_input.insert(tk.END, 'QTY')
-        quantityB_label = tk.Label(input_frame, text = 'Quantity BOM B')
-        self.quantityB_input.grid(row = 2, column = 3, padx = 5, pady = 5)
-        quantityB_label.grid(row = 2, column = 2, padx = 5, pady = 5)
-
-        self.ref_dsgA_input = tk.Text(input_frame, height = 1, width = 15)
-        self.ref_dsgA_input.insert(tk.END, 'REF DGN')
-        ref_dsgA_label = tk.Label(input_frame, text = 'Reference Designator BOM A')
-        self.ref_dsgA_input.grid(row = 1, column = 5, padx = 5, pady = 5)
-        ref_dsgA_label.grid(row = 1, column = 4, padx = 5, pady = 5)
-
-        self.ref_dsgB_input = tk.Text(input_frame, height = 1, width = 15)
-        self.ref_dsgB_input.insert(tk.END, 'REF DGN')
-        ref_dsgB_label = tk.Label(input_frame, text = 'Reference Designator BOM B')
-        self.ref_dsgB_input.grid(row = 2, column = 5, padx = 5, pady = 5)
-        ref_dsgB_label.grid(row = 2, column = 4, padx = 5, pady = 5)
-
-        self.manuA_input = tk.Text(input_frame, height = 1, width = 15)
-        self.manuA_input.insert(tk.END, 'MFG 1')
-        manuA_label = tk.Label(input_frame, text = 'Manufacturer BOM A')
-        self.manuA_input.grid(row = 1, column = 7, padx = 5, pady = 5)
-        manuA_label.grid(row = 1, column = 6, padx = 5, pady = 5)
-
-        self.manuB_input = tk.Text(input_frame, height = 1, width = 15)
-        self.manuB_input.insert(tk.END, 'MFG 1')
-        manuB_label = tk.Label(input_frame, text = 'Manufacturer BOM B')
-        self.manuB_input.grid(row = 2, column = 7, padx = 5, pady = 5)
-        manuB_label.grid(row = 2, column = 6, padx = 5, pady = 5)
+        # create and place buttons with labels
+        upload_bomA_button = Button_Classes.ButtonWithLabel(input_frame, 
+                                                 'Please upload file', 
+                                                 'upload BOM A', 
+                                                 upload_bomA_button_coord, 
+                                                 command_ = self.uploadFileA, 
+                                                 pady_ = (30, 5), 
+                                                 column_span = 7, 
+                                                 sticky_ = "W")
         
-        self.mpnA_input = tk.Text(input_frame, height = 1, width = 15)
-        self.mpnA_input.insert(tk.END, 'MFG PN 1')
-        mpnA_label = tk.Label(input_frame, text = 'Manufacturer Part Number BOM A')
-        self.mpnA_input.grid(row = 1, column = 9, padx = 5, pady = 5)
-        mpnA_label.grid(row = 1, column = 8, padx = 5, pady = 5)
+        self.bomA_label_value = upload_bomA_button.label_value
 
-        self.mpnB_input = tk.Text(input_frame, height = 1, width = 15)
-        self.mpnB_input.insert(tk.END, 'MFG PN 1')
-        mpnB_label = tk.Label(input_frame, text = 'Manufacturer Part Number BOM B')
-        self.mpnB_input.grid(row = 2, column = 9, padx = 5, pady = 5)
-        mpnB_label.grid(row = 2, column = 8, padx = 5, pady = 5)
- 
-        self.headerA_input = tk.Text(input_frame, height = 1, width = 10)
-        self.headerA_input.insert(tk.END, '2')
-        headerA_label = tk.Label(input_frame, text = 'Header Row BOM A')
-        self.headerA_input.grid(row = 3, column = 1, padx = 5, pady = (30, 5))
-        headerA_label.grid(row = 3, column = 0, padx = 5, pady = (30, 5))
+        upload_bomB_button = Button_Classes.ButtonWithLabel(input_frame, 
+                                                 'Please upload file', 
+                                                 'upload BOM B', 
+                                                 upload_bomB_button_coord, 
+                                                 command_ = self.uploadFileB,
+                                                 column_span = 7, 
+                                                 sticky_ = "W")
+        
+        self.bomB_label_value = upload_bomB_button.label_value
 
-        self.headerB_input = tk.Text(input_frame, height = 1, width = 10)
-        self.headerB_input.insert(tk.END, '2')
-        headerB_label = tk.Label(input_frame, text = 'Header Row BOM B')
-        self.headerB_input.grid(row = 4, column = 1, padx = 5, pady = 5)
-        headerB_label.grid(row = 4, column = 0, padx = 5, pady = 5)
+        # set up values for buttons with text
+        descriptionA_coord = (1, 1)
+        descriptionB_coord = (2, 1)
+        quantityA_coord = (1, 3)
+        quantityB_coord = (2, 3)
+        ref_dsgA_coord  = (1, 5)
+        ref_dsgB_coord = (2, 5)
+        manuA_coord = (1, 7)
+        manuB_coord = (2, 7)
+        mpnA_coord = (1, 9)
+        mpnB_coord = (2, 9)
+        headerA_coord = (3, 1)
+        headerB_coord = (4, 1)
 
+        # create and place buttons with text
+        descriptionA = Button_Classes.ButtonWithText(input_frame, 'Description BOM A', descriptionA_coord)
+        self.descriptionA_input = descriptionA.input
+        descriptionA.input.insert(tk.END, 'DESCRIPTION')
+
+        descriptionB = Button_Classes.ButtonWithText(input_frame, 'Description BOM B', descriptionB_coord)
+        self.descriptionB_input = descriptionB.input
+        descriptionB.input.insert(tk.END, 'DESCRIPTION')
+
+        quantityA = Button_Classes.ButtonWithText(input_frame, 'Quantity BOM A', quantityA_coord)
+        self.quantityA_input = quantityA.input
+        quantityA.input.insert(tk.END, 'QTY')
+
+        quantityB = Button_Classes.ButtonWithText(input_frame, 'Quantity BOM B', quantityB_coord)
+        self.quantityB_input = quantityB.input
+        quantityB.input.insert(tk.END, 'QTY')
+
+        ref_dsgA = Button_Classes.ButtonWithText(input_frame, 'Reference Designator BOM A', ref_dsgA_coord)
+        self.ref_dsgA_input = ref_dsgA.input
+        ref_dsgA.input.insert(tk.END, 'REF DGN')
+
+        ref_dsgB = Button_Classes.ButtonWithText(input_frame, 'Reference Designator BOM B', ref_dsgB_coord)
+        self.ref_dsgB_input = ref_dsgB.input
+        ref_dsgB.input.insert(tk.END, 'REF DGN')
+
+        manuA = Button_Classes.ButtonWithText(input_frame, 'Manufacturer BOM A', manuA_coord)
+        self.manuA_input = manuA.input
+        manuA.input.insert(tk.END, 'MFG 1')
+
+        manuB = Button_Classes.ButtonWithText(input_frame, 'Manufacturer BOM B', manuB_coord)
+        self.manuB_input = manuB.input
+        manuB.input.insert(tk.END, 'MFG 1')
+
+        mpnA = Button_Classes.ButtonWithText(input_frame, 'Manufacturer Part Number BOM A', mpnA_coord)
+        self.mpnA_input = mpnA.input
+        mpnA.input.insert(tk.END, 'MFG PN 1')
+
+        mpnB = Button_Classes.ButtonWithText(input_frame, 'Manufacturer Part Number BOM B', mpnB_coord)
+        self.mpnB_input = mpnB.input
+        mpnB.input.insert(tk.END, 'MFG PN 1')
+
+        headerA = Button_Classes.ButtonWithText(input_frame, 'Header Row BOM A', headerA_coord, pady_ = (30, 5))
+        self.headerA_input = headerA.input
+        headerA.input.insert(tk.END, '2')
+
+        headerB = Button_Classes.ButtonWithText(input_frame, 'Header Row BOM B', headerB_coord)
+        self.headerB_input = headerB.input
+        headerB.input.insert(tk.END, '2')
+
+        # some additional buttons that don't fit into the button-with-label or button-with-text classes
         compare_button = tk.Button(input_frame, text = 'COMPARE BOMs', command = self.compareBoms)
         compare_button.grid(row = 7, column = 0, columnspan = 10, padx = 10, pady = 10)
 
         search_button = tk.Button(input_frame, text = 'Search Ref Dsg', command = self.searchRefDsg)
         search_button.grid(row = 8, column = 10, padx = 10, pady = 10)
-
         self.search_input = tk.Text(input_frame, height = 1, width = 10)
         self.search_input.grid(row = 8, column = 9, padx = 10, pady = 10)
 
@@ -121,7 +125,6 @@ class BomCheckerMainWindow(tk.Tk):
         self.warnings_frame.pack(side = 'top', padx = 10, pady = 10)
         self.warnings_frame.pack_propagate(False)
         
-
         # frame for the flagged rows from the BOMs
         self.flagged_rows_frame = tk.LabelFrame(self, text = 'Flagged Rows')
         self.flagged_rows_frame.pack(side = 'bottom', fill = 'both', expand = True, padx = 10, pady = 10)
@@ -133,7 +136,9 @@ class BomCheckerMainWindow(tk.Tk):
         self.merged_boms = []
 
         # table view implementation
-        header_list = ['Ref Dsg', 'Description_A', 'Quantity_A', 'Manufacturer_A', 'Manufacturer Part Number_A', 'Description_B', 'Quantity_B', 'Manufacturer_B', 'Manufacturer Part Number_B', 'Desc_match_ratio', 'MFG_match_ratio', 'MPN_match_ratio']
+        header_list = ['Ref Dsg', 'Description_A', 'Quantity_A', 'Manufacturer_A', 'Manufacturer Part Number_A', 
+                       'Description_B', 'Quantity_B', 'Manufacturer_B', 'Manufacturer Part Number_B', 
+                       'Desc_match_ratio', 'MFG_match_ratio', 'MPN_match_ratio']
         column_header = header_list
         column_width = [55, 85, 75, 100, 170, 85, 75, 100, 170, 110, 110, 110]
         color_map = {
@@ -148,25 +153,28 @@ class BomCheckerMainWindow(tk.Tk):
             'separator_color':'grey'
             }
             
-        tableview.setup_columns(root = self.flagged_rows_frame, window = self.flagged_rows_frame, column_headers = column_header, column_widths = column_width, table_height = 20, frame_height = 700, column_height = 200, header_height = 49, table_color_map = color_map)
+        tableview.setup_columns(root = self.flagged_rows_frame, 
+                                window = self.flagged_rows_frame, 
+                                column_headers = column_header, 
+                                column_widths = column_width, 
+                                table_height = 20, 
+                                frame_height = 700, 
+                                column_height = 200, 
+                                header_height = 49, 
+                                table_color_map = color_map)
         tableview.pack()
 
     def uploadFileA(self, *_): 
         filename = filedialog.askopenfilename()
         self.bomA_label_value.set(filename)
 
-        self.descA = self.descriptionA_input.get('1.0', 'end')
-        self.descA = self.descA.strip()
-        self.quantA = self.quantityA_input.get('1.0', 'end')
-        self.quantA = self.quantA.strip()
-        self.ref_dsgA = self.ref_dsgA_input.get('1.0', 'end')
-        self.ref_dsgA = self.ref_dsgA.strip()
-        self.manuA = self.manuA_input.get('1.0', 'end')
-        self.manuA = self.manuA.strip()
-        self.mpnA = self.mpnA_input.get('1.0', 'end')
-        self.mpnA = self.mpnA.strip()
-        self.headerA = self.headerA_input.get('1.0', 'end')
-        self.headerA  = self.headerA.strip()
+        self.descA = self.descriptionA_input.get('1.0', 'end').strip()
+        self.quantA = self.quantityA_input.get('1.0', 'end').strip()
+        self.ref_dsgA = self.ref_dsgA_input.get('1.0', 'end').strip()
+        self.manuA = self.manuA_input.get('1.0', 'end').strip()
+        self.mpnA = self.mpnA_input.get('1.0', 'end').strip()
+        self.headerA = self.headerA_input.get('1.0', 'end').strip()
+
 
         if filename.endswith('xlsx'):
             try:
@@ -193,18 +201,12 @@ class BomCheckerMainWindow(tk.Tk):
         filename = filedialog.askopenfilename()
         self.bomB_label_value.set(filename)
 
-        self.descB = self.descriptionB_input.get('1.0', 'end')
-        self.descB = self.descB.strip()
-        self.quantB = self.quantityB_input.get('1.0', 'end')
-        self.quantB = self.quantB.strip()
-        self.ref_dsgB = self.ref_dsgB_input.get('1.0', 'end')
-        self.ref_dsgB = self.ref_dsgB.strip()
-        self.manuB = self.manuB_input.get('1.0', 'end')
-        self.manuB = self.manuB.strip()
-        self.mpnB = self.mpnB_input.get('1.0', 'end')
-        self.mpnB = self.mpnB.strip()
-        self.headerB = self.headerB_input.get('1.0', 'end')
-        self.headerB  = self.headerB.strip()
+        self.descB = self.descriptionB_input.get('1.0', 'end').strip()
+        self.quantB = self.quantityB_input.get('1.0', 'end').strip()
+        self.ref_dsgB = self.ref_dsgB_input.get('1.0', 'end').strip()
+        self.manuB = self.manuB_input.get('1.0', 'end').strip()
+        self.mpnB = self.mpnB_input.get('1.0', 'end').strip()
+        self.headerB = self.headerB_input.get('1.0', 'end').strip()
 
         if filename.endswith('xlsx'):
             try:
