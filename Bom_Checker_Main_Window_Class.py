@@ -236,12 +236,12 @@ class BomCheckerMainWindow(tk.Tk):
             highlight_column_numbers = []
             highlight_row_numbers = []
 
-            restructured_bomA = Support_Functions_Main_Window_Class.split_Ref_Designator_To_Separate_Columns(warnings_list, self.bomA, self.ref_dsgA, self.descA, self.quantA, self.manuA, self.mpnA)
-            restructured_bomB = Support_Functions_Main_Window_Class.split_Ref_Designator_To_Separate_Columns(warnings_list, self.bomB, self.ref_dsgB, self.descB, self.quantB, self.manuB, self.mpnB)
+            restructured_bomA = Support_Functions_Main_Window_Class.splitRefDesignatorSeparateRows(warnings_list, self.bomA, self.ref_dsgA, self.descA, self.quantA, self.manuA, self.mpnA)
+            restructured_bomB = Support_Functions_Main_Window_Class.splitRefDesignatorSeparateRows(warnings_list, self.bomB, self.ref_dsgB, self.descB, self.quantB, self.manuB, self.mpnB)
             
-            Support_Functions_Main_Window_Class.check_Boms_Exact_Match(warnings_list, restructured_bomA, restructured_bomB)    
-            Support_Functions_Main_Window_Class.check_For_Duplicates(warnings_list, restructured_bomA, restructured_bomB)
-            flagged_rows_temp_storage = Support_Functions_Main_Window_Class.compare_Ref_Designators(warnings_list, highlight_column_numbers, highlight_row_numbers, restructured_bomA, restructured_bomB)
+            Support_Functions_Main_Window_Class.checkBomsExactMatch(warnings_list, restructured_bomA, restructured_bomB)    
+            Support_Functions_Main_Window_Class.checkForDuplicates(warnings_list, restructured_bomA, restructured_bomB)
+            flagged_rows_temp_storage = Support_Functions_Main_Window_Class.compareRefDesignators(warnings_list, highlight_column_numbers, highlight_row_numbers, restructured_bomA, restructured_bomB)
 
             tableview.clear()
 
@@ -268,7 +268,9 @@ class BomCheckerMainWindow(tk.Tk):
             # probably best place to stick this due to scoping
             self.merged_boms = restructured_bomA.merge(restructured_bomB, how='outer', on='split_ref_designators', sort=True, suffixes=('_A', '_B'), copy=None, indicator=False, validate=None)
             self.merged_boms.drop(['index_A', 'original_index_A', 'ref_dsg_position_A', 'index_B', 'original_index_B', 'ref_dsg_position_B'], axis=1, inplace = True)
-            self.merged_boms = self.merged_boms[['split_ref_designators', 'Description_A', 'Quantity_A', 'Manufacturer_A', 'Manufacturer Part Number_A', 'Description_B', 'Quantity_B', 'Manufacturer_B', 'Manufacturer Part Number_B']]
+            self.merged_boms = self.merged_boms[['split_ref_designators', 
+                                                 'Description_A', 'Quantity_A', 'Manufacturer_A', 'Manufacturer Part Number_A', 
+                                                 'Description_B', 'Quantity_B', 'Manufacturer_B', 'Manufacturer Part Number_B']]
             self.merged_boms.rename(columns = {'split_ref_designators': 'Ref Dsg'}, inplace = True)
             col = self.merged_boms.pop('Ref Dsg')
             self.merged_boms.insert(0, col.name, col)

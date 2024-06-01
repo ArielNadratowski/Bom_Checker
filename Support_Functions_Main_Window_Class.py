@@ -4,11 +4,19 @@ from functools import partial
 import difflib
 import tkinter as tk
 
-    
-def split_Ref_Designator_To_Separate_Columns(warnings, input_bom, input_ref_dsg, input_description, input_quantity, input_manufacturer1, input_manufacturer_part_number1):
-    input_bom = input_bom.rename(columns={input_ref_dsg: 'Ref Dsg', input_description: 'Description', input_quantity: 'Quantity', input_manufacturer1: 'Manufacturer', input_manufacturer_part_number1: 'Manufacturer Part Number'}, errors = 'raise')
-    input_bom_no_na = input_bom.dropna(subset=['Ref Dsg'], inplace=False) # drop any rows that are missing reference designators
-    input_bom_no_na = input_bom_no_na.fillna('<NA>') # replacing null values (floats) with certain string in case that becomes a problem later (it does if trying to apply strimg methods down a column with float NAs)
+## Splits reference designators into individual rows 
+# warnings: list to store warning messages for display
+# input_bom: bom that needs to have ref designators split
+# input_ref_dsg: name of reference designator colummn
+# input description: name of description column
+# input_manufacturer1: name of manufacturer 1 column
+# input_manufacturer_part_number1: name of manufacturer part number column
+# Returns: cleaned up bom, with reference designators split to their own row, and remove rows with missing reference designator
+
+def splitRefDesignatorSeparateRows(warnings, input_bom, input_ref_dsg, input_description, input_quantity, input_manufacturer1, input_manufacturer_part_number1):
+    input_bom_renamed = input_bom.rename(columns={input_ref_dsg: 'Ref Dsg', input_description: 'Description', input_quantity: 'Quantity', input_manufacturer1: 'Manufacturer', input_manufacturer_part_number1: 'Manufacturer Part Number'}, errors = 'raise')
+    input_bom_no_na = input_bom_renamed.dropna(subset=['Ref Dsg'], inplace=False) # drop any rows that are missing reference designators
+    input_bom_no_na = input_bom_no_na.fillna('<NA>') # replacing null values (floats) with certain string because trying to apply strimg methods down a column with float NAs makes it mad
     input_bom_no_na['Ref Dsg'] = input_bom_no_na['Ref Dsg'].str.replace(' ','') # get rid of any whitespace so that the next line splits cleanly
 
     # use regex to insert a comma only when numbers > letters (ABC123,ABC123). Removes an extra comma if there is already a comma there, and removes the trailing comma that it inserts.
@@ -22,26 +30,41 @@ def split_Ref_Designator_To_Separate_Columns(warnings, input_bom, input_ref_dsg,
     input_bom_no_na = pd.concat([input_bom_no_na, split_columns], axis=1) 
 
     input_bom_no_na['original_index'] = range(0, len(input_bom_no_na))
-    # using pivot longer to reformat. Does lose any columns not listed here. Will screw up quantities, do a check on that later?
+    # using pivot longer to reformat. Does lose any columns not listed here. Will screw up quantities, want to fix later.
     input_bom_no_na = pd.melt(input_bom_no_na, id_vars=['original_index', 'Description', 'Quantity', 'Manufacturer', 'Manufacturer Part Number'], value_vars = ref_dsg_position, value_name = 'split_ref_designators', var_name = 'ref_dsg_position') 
     input_bom_no_na = input_bom_no_na.sort_values(by = ['split_ref_designators'])
     input_bom_no_na.dropna(subset=['split_ref_designators'], inplace=True) 
-    input_bom_no_na = input_bom_no_na.reset_index() # need to do this for later comparisons
+    input_bom_no_na = input_bom_no_na.reset_index() # need to reset index for later comparisons
     return(input_bom_no_na)
 
 
-# check if boms are exact match
-def check_Boms_Exact_Match(warnings, input_bomA, input_bom_B): 
-# check if exact match between boms
+## check if boms are exact match
+# warnings: list to store warning messages for display
+# input_bomA: one of the boms to be compared
+# input_bomB: the other bom to be compared
+
+def checkBomsExactMatch(warnings, input_bomA, input_bom_B): 
     if len(input_bomA) == len(input_bom_B):
-        boms_exact_match = input_bomA == input_bom_B # only works if boms are same dimensions
-        if np.all(boms_exact_match['Description'] == True) and np.all(boms_exact_match['Quantity'] == True) and np.all(boms_exact_match['Manufacturer'] == True) and np.all(boms_exact_match['Manufacturer Part Number'] == True) and np.all(boms_exact_match['ref_dsg_position'] == True) and np.all(boms_exact_match['split_ref_designators'] == True):
-            warnings.append('bomA and bomB are exact matches') # if overall boms match row for row (if so, then they're exact matches and no need to further check)
+        boms_exact_match = input_bomA == input_bom_B # will break if boms aren't same dimentions (which I think should never happen?)
+        if (
+            np.all(boms_exact_match['Description'] == True) 
+            and np.all(boms_exact_match['Quantity'] == True) 
+            and np.all(boms_exact_match['Manufacturer'] == True) 
+            and np.all(boms_exact_match['Manufacturer Part Number'] == True) 
+            and np.all(boms_exact_match['ref_dsg_position'] == True) 
+            and np.all(boms_exact_match['split_ref_designators'] == True)
+        ):
+            warnings.append('bomA and bomB are exact matches')
         else:
             warnings.append('bomA and bomB do not match')
 
-# check for dupolicate entries            
-def check_For_Duplicates(warnings, input_bomA, input_bomB):
+## check for dupolicate entries
+# warnings: list to store warning messages for display
+# input_bomA: one of the boms to be compared
+# input_bomB: the other bom to be compared
+
+def checkForDuplicates(warnings, input_bomA, input_bomB):
+    # duplicates in bomA
     if input_bomA['split_ref_designators'].duplicated().any():
         duplicated = input_bomA['split_ref_designators'].duplicated()
         list_of_duplicates = []
@@ -50,6 +73,7 @@ def check_For_Duplicates(warnings, input_bomA, input_bomB):
                 list_of_duplicates.append(input_bomA.loc[index]['split_ref_designators'])
         warnings.append('The following reference designators in bomA have duplicated reference designators: ' + str(list_of_duplicates))
     
+    # duplicates in bomB
     if input_bomB['split_ref_designators'].duplicated().any():
         duplicated = input_bomB['split_ref_designators'].duplicated()
         list_of_duplicates = []
@@ -59,12 +83,22 @@ def check_For_Duplicates(warnings, input_bomA, input_bomB):
         warnings.append('The following reference designators in bomB have duplicated reference designators: ' + str(list_of_duplicates))
 
 
-# make sequence matcher function to use later
-def apply_sequence_matcher(s, c1, c2): 
+## make sequence matcher function to use below
+# c1: column 1
+# c2: column 2
+# returns the ratio of match between column 1 and 2
+
+def applySequenceMatcher(s, c1, c2): 
     return difflib.SequenceMatcher(None, s[c1], s[c2]).ratio()
         
-#  Compare reference designators
-def compare_Ref_Designators(warnings, columns, rows, input_bomA, input_bom_B):
+## Compare reference designators
+# warnings: list to store warning messages for display
+# columns: list to store columns that need to be highlighted
+# rows: list to store rows that need to be highlighted
+# input_bomA: one of the boms to be compared
+# input_bomB: the other bom to be compared
+
+def compareRefDesignators(warnings, columns, rows, input_bomA, input_bom_B):
     # check if missing
     merged_boms = input_bomA.merge(input_bom_B, how='outer', on='split_ref_designators', sort=True, suffixes=('_A', '_B'), copy=None, indicator=False, validate=None)
     in_bomA_not_in_bomB = ~input_bomA['split_ref_designators'].isin(input_bom_B['split_ref_designators'])
@@ -83,17 +117,26 @@ def compare_Ref_Designators(warnings, columns, rows, input_bomA, input_bom_B):
     if len(list_ref_dsg_not_in_bomA) != 0:
         warnings.append('The following reference designators are in bomB but not in bomA: ' + str(list_ref_dsg_not_in_bomA))
 
-    # check if stuff doesn't match
-    merged_boms[['Description_A', 'Description_B', 'Manufacturer_A', 'Manufacturer_B', 'Manufacturer Part Number_A', 'Manufacturer Part Number_B']] = merged_boms[['Description_A', 'Description_B', 'Manufacturer_A', 'Manufacturer_B', 'Manufacturer Part Number_A', 'Manufacturer Part Number_B']].astype(str) 
-    merged_boms['Desc_match_ratio'] = merged_boms.apply(partial(apply_sequence_matcher, c1='Description_A', c2='Description_B'), axis=1)
-    merged_boms['MFG_match_ratio'] = merged_boms.apply(partial(apply_sequence_matcher, c1='Manufacturer_A', c2='Manufacturer_B'), axis=1)
-    merged_boms['MPN_match_ratio'] = merged_boms.apply(partial(apply_sequence_matcher, c1='Manufacturer Part Number_A', c2='Manufacturer Part Number_B'), axis=1)
+    # make ratio of how much columns match 
+    merged_boms[['Description_A', 'Description_B', 'Manufacturer_A', 'Manufacturer_B', 'Manufacturer Part Number_A', 'Manufacturer Part Number_B']] = \
+        merged_boms[['Description_A', 'Description_B', 'Manufacturer_A', 'Manufacturer_B', 'Manufacturer Part Number_A', 'Manufacturer Part Number_B']].astype(str) 
+    merged_boms['Desc_match_ratio'] = merged_boms.apply(partial(applySequenceMatcher, c1='Description_A', c2='Description_B'), axis=1)
+    merged_boms['MFG_match_ratio'] = merged_boms.apply(partial(applySequenceMatcher, c1='Manufacturer_A', c2='Manufacturer_B'), axis=1)
+    merged_boms['MPN_match_ratio'] = merged_boms.apply(partial(applySequenceMatcher, c1='Manufacturer Part Number_A', c2='Manufacturer Part Number_B'), axis=1)
+
+    # two things are happening simultaneously below:
+    # 1) flagged_rows is recording indexes from the full bom so that I can pull only the rows with mismatches out of it (contained in flagged_merged_bom_rows).
+    # 2) "columns" and "rows" are recording the row and column numbers that need to get highlighted once flagged_merged_bom_rows is created.
+    # tableview wants x and y coordinates for indicating each cell that gets highlighted, so temp_row holds on the x coordinate (or row number that the loop is on) while 
+    # the correct y coordinates are added to "columns". This allows several pairs of columns to be highlighted in the same row. 
+    # increment tells temp_row to increment by 1 only if something needs to get highlighted, and needs to get reset to 0 at the beginning of each loop.
+    # this is because indexes for both the full bom and smaller bom are being collected at the same time.
 
     flagged_rows = []
-    temp_row = 0
+    flagged_temp_row = 0 
     for index, item in enumerate(merged_boms['split_ref_designators'], start=0): 
         temp_index = merged_boms.index[merged_boms['split_ref_designators'] == item].tolist()
-        increment = 0
+        increment = 0 
         if len(temp_index) == 1:
             if merged_boms.loc[temp_index]['Description_A'].tolist() != merged_boms.loc[temp_index]['Description_B'].tolist(): 
                 columns.extend([2, 6])
