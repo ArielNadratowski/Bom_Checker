@@ -133,38 +133,38 @@ def compareRefDesignators(warnings, columns, rows, input_bomA, input_bom_B):
     # this is because indexes for both the full bom and smaller bom are being collected at the same time.
 
     flagged_rows = []
-    flagged_temp_row = 0 
+    flagged_row_tracker = 0 
     for index, item in enumerate(merged_boms['split_ref_designators'], start=0): 
-        temp_index = merged_boms.index[merged_boms['split_ref_designators'] == item].tolist()
+        index_tracker = merged_boms.index[merged_boms['split_ref_designators'] == item].tolist()
         increment = 0 
-        if len(temp_index) == 1:
-            if merged_boms.loc[temp_index]['Description_A'].tolist() != merged_boms.loc[temp_index]['Description_B'].tolist(): 
+        if len(index_tracker) == 1:
+            if merged_boms.loc[index_tracker]['Description_A'].tolist() != merged_boms.loc[index_tracker]['Description_B'].tolist(): 
                 columns.extend([2, 6])
-                rows.extend([temp_row, temp_row])
-                flagged_rows = flagged_rows + temp_index
+                rows.extend([flagged_row_tracker, flagged_row_tracker])
+                flagged_rows = flagged_rows + index_tracker
                 increment = 1
-            if merged_boms.loc[temp_index]['Quantity_A'].tolist() != merged_boms.loc[temp_index]['Quantity_B'].tolist(): 
+            if merged_boms.loc[index_tracker]['Quantity_A'].tolist() != merged_boms.loc[index_tracker]['Quantity_B'].tolist(): 
                 columns.extend([3, 7])
-                rows.extend([temp_row, temp_row])
-                flagged_rows = flagged_rows + temp_index
+                rows.extend([flagged_row_tracker, flagged_row_tracker])
+                flagged_rows = flagged_rows + index_tracker
                 increment = 1
-            if merged_boms.loc[temp_index]['Manufacturer_A'].tolist() != merged_boms.loc[temp_index]['Manufacturer_B'].tolist(): 
+            if merged_boms.loc[index_tracker]['Manufacturer_A'].tolist() != merged_boms.loc[index_tracker]['Manufacturer_B'].tolist(): 
                 columns.extend([4, 8])
-                rows.extend([temp_row, temp_row])
-                flagged_rows = flagged_rows + temp_index
+                rows.extend([flagged_row_tracker, flagged_row_tracker])
+                flagged_rows = flagged_rows + index_tracker
                 increment = 1
-            if merged_boms.loc[temp_index]['Manufacturer Part Number_A'].tolist() != merged_boms.loc[temp_index]['Manufacturer Part Number_B'].tolist():
+            if merged_boms.loc[index_tracker]['Manufacturer Part Number_A'].tolist() != merged_boms.loc[index_tracker]['Manufacturer Part Number_B'].tolist():
                 columns.extend([5, 9])
-                rows.extend([temp_row, temp_row])
-                flagged_rows = flagged_rows + temp_index
+                rows.extend([flagged_row_tracker, flagged_row_tracker])
+                flagged_rows = flagged_rows + index_tracker
                 increment = 1
-        if len(temp_index) > 1:
-            flagged_rows = flagged_rows + temp_index
+        if len(index_tracker) > 1:
+            flagged_rows = flagged_rows + index_tracker
             columns.extend(range(1, 13))
-            rows.extend([temp_row] * 12)
+            rows.extend([flagged_row_tracker] * 12)
             increment = 1
         if increment == 1:
-            temp_row += 1
+            flagged_row_tracker += 1
        
     flagged_rows = set(flagged_rows)
     flagged_rows = list(flagged_rows)

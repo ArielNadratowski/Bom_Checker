@@ -2,8 +2,9 @@ import tkinter as tk
 from tableview import tableview
 from tkinter import filedialog, messagebox, ttk
 import pandas as pd
-import Support_Functions_Main_Window_Class
-import Button_Classes
+import Main_Window_Support_Functions
+from ButtonWithText import ButtonWithText
+from ButtonWithLabel import ButtonWithLabel
 
 class BomCheckerMainWindow(tk.Tk):
     def __init__(self):
@@ -27,7 +28,7 @@ class BomCheckerMainWindow(tk.Tk):
         upload_bomB_button_coord = (4, 2)
 
         # create and place buttons with labels
-        upload_bomA_button = Button_Classes.ButtonWithLabel(input_frame, 
+        upload_bomA_button = ButtonWithLabel(input_frame, 
                                                  'Please upload file', 
                                                  'upload BOM A', 
                                                  upload_bomA_button_coord, 
@@ -38,7 +39,7 @@ class BomCheckerMainWindow(tk.Tk):
         
         self.bomA_label_value = upload_bomA_button.label_value
 
-        upload_bomB_button = Button_Classes.ButtonWithLabel(input_frame, 
+        upload_bomB_button = ButtonWithLabel(input_frame, 
                                                  'Please upload file', 
                                                  'upload BOM B', 
                                                  upload_bomB_button_coord, 
@@ -63,51 +64,51 @@ class BomCheckerMainWindow(tk.Tk):
         headerB_coord = (4, 1)
 
         # create and place buttons with text
-        descriptionA = Button_Classes.ButtonWithText(input_frame, 'Description BOM A', descriptionA_coord)
+        descriptionA = ButtonWithText(input_frame, 'Description BOM A', descriptionA_coord)
         self.descriptionA_input = descriptionA.input
         descriptionA.input.insert(tk.END, 'DESCRIPTION')
 
-        descriptionB = Button_Classes.ButtonWithText(input_frame, 'Description BOM B', descriptionB_coord)
+        descriptionB = ButtonWithText(input_frame, 'Description BOM B', descriptionB_coord)
         self.descriptionB_input = descriptionB.input
         descriptionB.input.insert(tk.END, 'DESCRIPTION')
 
-        quantityA = Button_Classes.ButtonWithText(input_frame, 'Quantity BOM A', quantityA_coord)
+        quantityA = ButtonWithText(input_frame, 'Quantity BOM A', quantityA_coord)
         self.quantityA_input = quantityA.input
         quantityA.input.insert(tk.END, 'QTY')
 
-        quantityB = Button_Classes.ButtonWithText(input_frame, 'Quantity BOM B', quantityB_coord)
+        quantityB = ButtonWithText(input_frame, 'Quantity BOM B', quantityB_coord)
         self.quantityB_input = quantityB.input
         quantityB.input.insert(tk.END, 'QTY')
 
-        ref_dsgA = Button_Classes.ButtonWithText(input_frame, 'Reference Designator BOM A', ref_dsgA_coord)
+        ref_dsgA = ButtonWithText(input_frame, 'Reference Designator BOM A', ref_dsgA_coord)
         self.ref_dsgA_input = ref_dsgA.input
         ref_dsgA.input.insert(tk.END, 'REF DGN')
 
-        ref_dsgB = Button_Classes.ButtonWithText(input_frame, 'Reference Designator BOM B', ref_dsgB_coord)
+        ref_dsgB = ButtonWithText(input_frame, 'Reference Designator BOM B', ref_dsgB_coord)
         self.ref_dsgB_input = ref_dsgB.input
         ref_dsgB.input.insert(tk.END, 'REF DGN')
 
-        manuA = Button_Classes.ButtonWithText(input_frame, 'Manufacturer BOM A', manuA_coord)
+        manuA = ButtonWithText(input_frame, 'Manufacturer BOM A', manuA_coord)
         self.manuA_input = manuA.input
         manuA.input.insert(tk.END, 'MFG 1')
 
-        manuB = Button_Classes.ButtonWithText(input_frame, 'Manufacturer BOM B', manuB_coord)
+        manuB = ButtonWithText(input_frame, 'Manufacturer BOM B', manuB_coord)
         self.manuB_input = manuB.input
         manuB.input.insert(tk.END, 'MFG 1')
 
-        mpnA = Button_Classes.ButtonWithText(input_frame, 'Manufacturer Part Number BOM A', mpnA_coord)
+        mpnA = ButtonWithText(input_frame, 'Manufacturer Part Number BOM A', mpnA_coord)
         self.mpnA_input = mpnA.input
         mpnA.input.insert(tk.END, 'MFG PN 1')
 
-        mpnB = Button_Classes.ButtonWithText(input_frame, 'Manufacturer Part Number BOM B', mpnB_coord)
+        mpnB = ButtonWithText(input_frame, 'Manufacturer Part Number BOM B', mpnB_coord)
         self.mpnB_input = mpnB.input
         mpnB.input.insert(tk.END, 'MFG PN 1')
 
-        headerA = Button_Classes.ButtonWithText(input_frame, 'Header Row BOM A', headerA_coord, pady_ = (30, 5))
+        headerA = ButtonWithText(input_frame, 'Header Row BOM A', headerA_coord, pady_ = (30, 5))
         self.headerA_input = headerA.input
         headerA.input.insert(tk.END, '2')
 
-        headerB = Button_Classes.ButtonWithText(input_frame, 'Header Row BOM B', headerB_coord)
+        headerB = ButtonWithText(input_frame, 'Header Row BOM B', headerB_coord)
         self.headerB_input = headerB.input
         headerB.input.insert(tk.END, '2')
 
@@ -136,12 +137,11 @@ class BomCheckerMainWindow(tk.Tk):
         self.merged_boms = []
 
         # table view implementation
-        header_list = ['Ref Dsg', 'Description_A', 'Quantity_A', 'Manufacturer_A', 'Manufacturer Part Number_A', 
+        HEADER_List = ['Ref Dsg', 'Description_A', 'Quantity_A', 'Manufacturer_A', 'Manufacturer Part Number_A', 
                        'Description_B', 'Quantity_B', 'Manufacturer_B', 'Manufacturer Part Number_B', 
                        'Desc_match_ratio', 'MFG_match_ratio', 'MPN_match_ratio']
-        column_header = header_list
-        column_width = [55, 85, 75, 100, 170, 85, 75, 100, 170, 110, 110, 110]
-        color_map = {
+        COLUMN_WIDTH = [55, 85, 75, 100, 170, 85, 75, 100, 170, 110, 110, 110]
+        COLOR_MAP = {
             'header_background': 'grey70',
             'header_foreground': 'black',
             'tree_background': 'white',
@@ -155,16 +155,16 @@ class BomCheckerMainWindow(tk.Tk):
             
         tableview.setup_columns(root = self.flagged_rows_frame, 
                                 window = self.flagged_rows_frame, 
-                                column_headers = column_header, 
-                                column_widths = column_width, 
+                                column_headers = HEADER_List, 
+                                column_widths = COLUMN_WIDTH, 
                                 table_height = 20, 
                                 frame_height = 700, 
                                 column_height = 200, 
                                 header_height = 49, 
-                                table_color_map = color_map)
+                                table_color_map = COLOR_MAP)
         tableview.pack()
 
-    def uploadFileA(self, *_): 
+    def uploadFileA(self): 
         filename = filedialog.askopenfilename()
         self.bomA_label_value.set(filename)
 
@@ -197,7 +197,7 @@ class BomCheckerMainWindow(tk.Tk):
                 messagebox.showerror('Information', f'No such file as {filename}')
 
         
-    def uploadFileB(self, *_): 
+    def uploadFileB(self): 
         filename = filedialog.askopenfilename()
         self.bomB_label_value.set(filename)
 
@@ -229,19 +229,19 @@ class BomCheckerMainWindow(tk.Tk):
                 messagebox.showerror('Information', f'No such file as {filename}')
 
 
-    def compareBoms(self, *_):
+    def compareBoms(self):
         if self.bomA_status == 1 and self.bomB_status == 1: # want: make this throw an error if this doesn't evaluate
             warnings_row = []
             warnings_list = []
             highlight_column_numbers = []
             highlight_row_numbers = []
 
-            restructured_bomA = Support_Functions_Main_Window_Class.splitRefDesignatorSeparateRows(warnings_list, self.bomA, self.ref_dsgA, self.descA, self.quantA, self.manuA, self.mpnA)
-            restructured_bomB = Support_Functions_Main_Window_Class.splitRefDesignatorSeparateRows(warnings_list, self.bomB, self.ref_dsgB, self.descB, self.quantB, self.manuB, self.mpnB)
+            restructured_bomA = Main_Window_Support_Functions.splitRefDesignatorSeparateRows(warnings_list, self.bomA, self.ref_dsgA, self.descA, self.quantA, self.manuA, self.mpnA)
+            restructured_bomB = Main_Window_Support_Functions.splitRefDesignatorSeparateRows(warnings_list, self.bomB, self.ref_dsgB, self.descB, self.quantB, self.manuB, self.mpnB)
             
-            Support_Functions_Main_Window_Class.checkBomsExactMatch(warnings_list, restructured_bomA, restructured_bomB)    
-            Support_Functions_Main_Window_Class.checkForDuplicates(warnings_list, restructured_bomA, restructured_bomB)
-            flagged_rows_temp_storage = Support_Functions_Main_Window_Class.compareRefDesignators(warnings_list, highlight_column_numbers, highlight_row_numbers, restructured_bomA, restructured_bomB)
+            Main_Window_Support_Functions.checkBomsExactMatch(warnings_list, restructured_bomA, restructured_bomB)    
+            Main_Window_Support_Functions.checkForDuplicates(warnings_list, restructured_bomA, restructured_bomB)
+            flagged_rows_temp_storage = Main_Window_Support_Functions.compareRefDesignators(warnings_list, highlight_column_numbers, highlight_row_numbers, restructured_bomA, restructured_bomB)
 
             tableview.clear()
 

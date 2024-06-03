@@ -8,12 +8,3 @@ class ButtonWithLabel:
 
         self.button.grid(row = button_cord[0], column = button_cord[1], padx = padx_, pady = pady_)
         self.label.grid(row = button_cord[0], column = button_cord[1] + 1, columnspan = column_span, sticky = sticky_, padx = padx_, pady = pady_)
-
-
-class ButtonWithText:
-    def __init__(self, frame, label_text, text_cord, padx_ = 5, pady_ = 5, column_span = 1, sticky_ = None):    
-        self.input = tk.Text(frame, height =1, width = 15)
-        self.label = tk.Label(frame, text = label_text)
-
-        self.input.grid(row = text_cord[0], column = text_cord[1], padx = padx_, pady = pady_)
-        self.label.grid(row = text_cord[0], column = text_cord[1] - 1, padx = padx_, pady = pady_)

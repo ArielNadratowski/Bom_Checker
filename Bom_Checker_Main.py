@@ -1,10 +1,9 @@
 # Bom Checker main window
-import Bom_Checker_Main_Window_Class
-
+from BomCheckerMainWindow import BomCheckerMainWindow
 
 def main():
 
-    Bom_Checker_Main_Window_Class.BomCheckerMainWindow().mainloop() 
+    BomCheckerMainWindow().mainloop() 
 
 
 main()
