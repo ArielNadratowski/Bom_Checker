@@ -175,7 +175,6 @@ class BomCheckerMainWindow(tk.Tk):
         self.mpnA = self.mpnA_input.get('1.0', 'end').strip()
         self.headerA = self.headerA_input.get('1.0', 'end').strip()
 
-
         if filename.endswith('xlsx'):
             try:
                 self.bomA = pd.read_excel(filename, header = int(self.headerA) - 1)

@@ -178,4 +178,8 @@ def compareRefDesignators(warnings, columns, rows, input_bomA, input_bom_B):
     return(flagged_merged_bom_rows)
 
 
+
+    
+
+
 # Note: uploading BOM > change header index does not update, you have to refresh by hitting upload bom
