@@ -2,9 +2,9 @@ import tkinter as tk
 from tableview import tableview
 from tkinter import filedialog, messagebox, ttk
 import pandas as pd
-import Main_Window_Support_Functions
-from ButtonWithText import ButtonWithText
-from ButtonWithLabel import ButtonWithLabel
+import main_window_support_functions
+from button_with_text import ButtonWithText
+from button_with_label import ButtonWithLabel
 
 class BomCheckerMainWindow(tk.Tk):
     def __init__(self):
@@ -32,7 +32,7 @@ class BomCheckerMainWindow(tk.Tk):
                                                  'Please upload file', 
                                                  'upload BOM A', 
                                                  upload_bomA_button_coord, 
-                                                 command_ = self.uploadFileA, 
+                                                 command_ = self.upload_fileA, 
                                                  pady_ = (30, 5), 
                                                  column_span = 7, 
                                                  sticky_ = "W")
@@ -43,7 +43,7 @@ class BomCheckerMainWindow(tk.Tk):
                                                  'Please upload file', 
                                                  'upload BOM B', 
                                                  upload_bomB_button_coord, 
-                                                 command_ = self.uploadFileB,
+                                                 command_ = self.upload_fileB,
                                                  column_span = 7, 
                                                  sticky_ = "W")
         
@@ -113,10 +113,10 @@ class BomCheckerMainWindow(tk.Tk):
         headerB.input.insert(tk.END, '2')
 
         # some additional buttons that don't fit into the button-with-label or button-with-text classes
-        compare_button = tk.Button(input_frame, text = 'COMPARE BOMs', command = self.compareBoms)
+        compare_button = tk.Button(input_frame, text = 'COMPARE BOMs', command = self.compare_boms)
         compare_button.grid(row = 7, column = 0, columnspan = 10, padx = 10, pady = 10)
 
-        search_button = tk.Button(input_frame, text = 'Search Ref Dsg', command = self.searchRefDsg)
+        search_button = tk.Button(input_frame, text = 'Search Ref Dsg', command = self.search_reference_designator)
         search_button.grid(row = 8, column = 10, padx = 10, pady = 10)
         self.search_input = tk.Text(input_frame, height = 1, width = 10)
         self.search_input.grid(row = 8, column = 9, padx = 10, pady = 10)
@@ -164,7 +164,7 @@ class BomCheckerMainWindow(tk.Tk):
                                 table_color_map = COLOR_MAP)
         tableview.pack()
 
-    def uploadFileA(self): 
+    def upload_fileA(self): 
         filename = filedialog.askopenfilename()
         self.bomA_label_value.set(filename)
 
@@ -196,7 +196,7 @@ class BomCheckerMainWindow(tk.Tk):
                 messagebox.showerror('Information', f'No such file as {filename}')
 
         
-    def uploadFileB(self): 
+    def upload_fileB(self): 
         filename = filedialog.askopenfilename()
         self.bomB_label_value.set(filename)
 
@@ -228,19 +228,19 @@ class BomCheckerMainWindow(tk.Tk):
                 messagebox.showerror('Information', f'No such file as {filename}')
 
 
-    def compareBoms(self):
+    def compare_boms(self):
         if self.bomA_status == 1 and self.bomB_status == 1: # want: make this throw an error if this doesn't evaluate
             warnings_row = []
             warnings_list = []
             highlight_column_numbers = []
             highlight_row_numbers = []
 
-            restructured_bomA = Main_Window_Support_Functions.splitRefDesignatorSeparateRows(warnings_list, self.bomA, self.ref_dsgA, self.descA, self.quantA, self.manuA, self.mpnA)
-            restructured_bomB = Main_Window_Support_Functions.splitRefDesignatorSeparateRows(warnings_list, self.bomB, self.ref_dsgB, self.descB, self.quantB, self.manuB, self.mpnB)
+            restructured_bomA = main_window_support_functions.split_reference_designator_separate_rows(warnings_list, self.bomA, self.ref_dsgA, self.descA, self.quantA, self.manuA, self.mpnA)
+            restructured_bomB = main_window_support_functions.split_reference_designator_separate_rows(warnings_list, self.bomB, self.ref_dsgB, self.descB, self.quantB, self.manuB, self.mpnB)
             
-            Main_Window_Support_Functions.checkBomsExactMatch(warnings_list, restructured_bomA, restructured_bomB)    
-            Main_Window_Support_Functions.checkForDuplicates(warnings_list, restructured_bomA, restructured_bomB)
-            flagged_rows_temp_storage = Main_Window_Support_Functions.compareRefDesignators(warnings_list, highlight_column_numbers, highlight_row_numbers, restructured_bomA, restructured_bomB)
+            main_window_support_functions.check_boms_exact_match(warnings_list, restructured_bomA, restructured_bomB)    
+            main_window_support_functions.check_for_duplicates(warnings_list, restructured_bomA, restructured_bomB)
+            flagged_rows_temp_storage = main_window_support_functions.compare_reference_designators(warnings_list, highlight_column_numbers, highlight_row_numbers, restructured_bomA, restructured_bomB)
 
             tableview.clear()
 
@@ -275,7 +275,7 @@ class BomCheckerMainWindow(tk.Tk):
             self.merged_boms.insert(0, col.name, col)
 
 
-    def searchRefDsg(self):
+    def search_reference_designator(self):
         tableview.clear()
 
         search_text = self.search_input.get('1.0', 'end')

@@ -13,7 +13,7 @@ import tkinter as tk
 # input_manufacturer_part_number1: name of manufacturer part number column
 # Returns: cleaned up bom, with reference designators split to their own row, and remove rows with missing reference designator
 
-def splitRefDesignatorSeparateRows(warnings, input_bom, input_ref_dsg, input_description, input_quantity, input_manufacturer1, input_manufacturer_part_number1):
+def split_reference_designator_separate_rows(warnings, input_bom, input_ref_dsg, input_description, input_quantity, input_manufacturer1, input_manufacturer_part_number1):
     input_bom_renamed = input_bom.rename(columns={input_ref_dsg: 'Ref Dsg', input_description: 'Description', input_quantity: 'Quantity', input_manufacturer1: 'Manufacturer', input_manufacturer_part_number1: 'Manufacturer Part Number'}, errors = 'raise')
     input_bom_no_na = input_bom_renamed.dropna(subset=['Ref Dsg'], inplace=False) # drop any rows that are missing reference designators
     input_bom_no_na = input_bom_no_na.fillna('<NA>') # replacing null values (floats) with certain string because trying to apply strimg methods down a column with float NAs makes it mad
@@ -43,7 +43,7 @@ def splitRefDesignatorSeparateRows(warnings, input_bom, input_ref_dsg, input_des
 # input_bomA: one of the boms to be compared
 # input_bomB: the other bom to be compared
 
-def checkBomsExactMatch(warnings, input_bomA, input_bom_B): 
+def check_boms_exact_match(warnings, input_bomA, input_bom_B): 
     if len(input_bomA) == len(input_bom_B):
         boms_exact_match = input_bomA == input_bom_B # will break if boms aren't same dimentions (which I think should never happen?)
         if (
@@ -63,7 +63,7 @@ def checkBomsExactMatch(warnings, input_bomA, input_bom_B):
 # input_bomA: one of the boms to be compared
 # input_bomB: the other bom to be compared
 
-def checkForDuplicates(warnings, input_bomA, input_bomB):
+def check_for_duplicates(warnings, input_bomA, input_bomB):
     # duplicates in bomA
     if input_bomA['split_ref_designators'].duplicated().any():
         duplicated = input_bomA['split_ref_designators'].duplicated()
@@ -88,7 +88,7 @@ def checkForDuplicates(warnings, input_bomA, input_bomB):
 # c2: column 2
 # returns the ratio of match between column 1 and 2
 
-def applySequenceMatcher(s, c1, c2): 
+def apply_sequence_matcher(s, c1, c2): 
     return difflib.SequenceMatcher(None, s[c1], s[c2]).ratio()
         
 ## Compare reference designators
@@ -98,7 +98,7 @@ def applySequenceMatcher(s, c1, c2):
 # input_bomA: one of the boms to be compared
 # input_bomB: the other bom to be compared
 
-def compareRefDesignators(warnings, columns, rows, input_bomA, input_bom_B):
+def compare_reference_designators(warnings, columns, rows, input_bomA, input_bom_B):
     # check if missing
     merged_boms = input_bomA.merge(input_bom_B, how='outer', on='split_ref_designators', sort=True, suffixes=('_A', '_B'), copy=None, indicator=False, validate=None)
     in_bomA_not_in_bomB = ~input_bomA['split_ref_designators'].isin(input_bom_B['split_ref_designators'])
@@ -120,9 +120,9 @@ def compareRefDesignators(warnings, columns, rows, input_bomA, input_bom_B):
     # make ratio of how much columns match 
     merged_boms[['Description_A', 'Description_B', 'Manufacturer_A', 'Manufacturer_B', 'Manufacturer Part Number_A', 'Manufacturer Part Number_B']] = \
         merged_boms[['Description_A', 'Description_B', 'Manufacturer_A', 'Manufacturer_B', 'Manufacturer Part Number_A', 'Manufacturer Part Number_B']].astype(str) 
-    merged_boms['Desc_match_ratio'] = merged_boms.apply(partial(applySequenceMatcher, c1='Description_A', c2='Description_B'), axis=1)
-    merged_boms['MFG_match_ratio'] = merged_boms.apply(partial(applySequenceMatcher, c1='Manufacturer_A', c2='Manufacturer_B'), axis=1)
-    merged_boms['MPN_match_ratio'] = merged_boms.apply(partial(applySequenceMatcher, c1='Manufacturer Part Number_A', c2='Manufacturer Part Number_B'), axis=1)
+    merged_boms['Desc_match_ratio'] = merged_boms.apply(partial(apply_sequence_matcher, c1='Description_A', c2='Description_B'), axis=1)
+    merged_boms['MFG_match_ratio'] = merged_boms.apply(partial(apply_sequence_matcher, c1='Manufacturer_A', c2='Manufacturer_B'), axis=1)
+    merged_boms['MPN_match_ratio'] = merged_boms.apply(partial(apply_sequence_matcher, c1='Manufacturer Part Number_A', c2='Manufacturer Part Number_B'), axis=1)
 
     # two things are happening simultaneously below:
     # 1) flagged_rows is recording indexes from the full bom so that I can pull only the rows with mismatches out of it (contained in flagged_merged_bom_rows).
