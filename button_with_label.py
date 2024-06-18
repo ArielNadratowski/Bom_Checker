@@ -6,5 +6,5 @@ class ButtonWithLabel:
         self.button = tk.Button(frame, text = buttom_text, command = command_)
         self.label = tk.Label(frame, textvariable = self.label_value)
 
-        self.button.grid(row = button_cord[0], column = button_cord[1], padx = padx_, pady = pady_)
-        self.label.grid(row = button_cord[0], column = button_cord[1] + 1, columnspan = column_span, sticky = sticky_, padx = padx_, pady = pady_)
+        self.button.grid(row = button_cord, column = 0, padx = padx_, pady = pady_)
+        self.label.grid(row = button_cord, column = 1, columnspan = column_span, sticky = sticky_, padx = padx_, pady = pady_)
