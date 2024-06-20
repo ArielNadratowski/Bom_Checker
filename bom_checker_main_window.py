@@ -14,13 +14,14 @@ class BomCheckerMainWindow(tk.Tk):
         self.test_name.pack(side = 'top')
 
         # values for setting frames and buttons
+        
 
 
         # set up upload frame (contains upload button and uploaded boms visualization)
-        self.upload_frame = UploadFrame('top')
+        self.upload_frame = UploadFrame(self, 'top')
 
         # set up compare and search frame (contains just the compare and search buttons)
-        self.compare_search_frame = CompareSearchFrame('top')
+        self.compare_search_frame = CompareSearchFrame(self.upload_frame, 'top')
 
         # set up warning frame (displays warnings)
         self.warning_frame = WarningFrame('top')
