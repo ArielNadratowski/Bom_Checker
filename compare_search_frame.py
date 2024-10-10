@@ -47,48 +47,6 @@ class CompareSearchFrame:
         # check for differences between reference designator rows (different manufacturer, etc)
         self.compare_reference_designators(selected_boms)
 
-
-
-                    
-
-
-#             main_window_support_functions.check_boms_exact_match(warnings_list, restructured_bomA, restructured_bomB)    
-#             main_window_support_functions.check_for_duplicates(warnings_list, restructured_bomA, restructured_bomB)
-#             flagged_rows_temp_storage = main_window_support_functions.compare_reference_designators(warnings_list, highlight_column_numbers, highlight_row_numbers, restructured_bomA, restructured_bomB)
-
-#             tableview.clear()
-
-#             # fill in table
-#             number_rows = len(flagged_rows_temp_storage.index)
-#             for i in range(number_rows):
-#                 column_number = 0
-#                 row_as_list = flagged_rows_temp_storage.iloc[i].tolist()
-#                 for item in row_as_list:
-#                     tableview.insert_item(column_number, text = item)
-#                     column_number += 1
-            
-#             # highlight cells that are different
-#             for c, r in zip(highlight_column_numbers, highlight_row_numbers):
-#                 tableview.highlight_cell(column = c, row = r, bg = 'yellow', fg = 'red')
-            
-#             # show warnings
-#             for widgets in self.warnings_frame.winfo_children():
-#                 widgets.destroy()
-#             for index, value in enumerate(warnings_list):
-#                 warnings_row.append(ttk.Label(self.warnings_frame, text = value, foreground = 'red'))
-#                 warnings_row[index].grid()
-
-#             # probably best place to stick this due to scoping
-#             self.merged_boms = restructured_bomA.merge(restructured_bomB, how='outer', on='split_ref_designators', sort=True, suffixes=('_A', '_B'), copy=None, indicator=False, validate=None)
-#             self.merged_boms.drop(['index_A', 'original_index_A', 'ref_dsg_position_A', 'index_B', 'original_index_B', 'ref_dsg_position_B'], axis=1, inplace = True)
-#             self.merged_boms = self.merged_boms[['split_ref_designators', 
-#                                                  'Description_A', 'Quantity_A', 'Manufacturer_A', 'Manufacturer Part Number_A', 
-#                                                  'Description_B', 'Quantity_B', 'Manufacturer_B', 'Manufacturer Part Number_B']]
-#             self.merged_boms.rename(columns = {'split_ref_designators': 'Ref Dsg'}, inplace = True)
-#             col = self.merged_boms.pop('Ref Dsg')
-#             self.merged_boms.insert(0, col.name, col)
-
-
     def check_for_duplicates(self, selected_boms):
         for bom in selected_boms:
             if bom.bom_dataframe['split_ref_designators'].duplicated().any():
@@ -150,6 +108,7 @@ class CompareSearchFrame:
         self.make_highlight_error_dataframe(all_boms_merged)
 
     def make_highlight_error_dataframe(self, all_boms_merged):
+        
         # compile list of all ref dsg in highlight error list and pull from all_boms_merged
         reference_designators_with_errors = []
         for item in self.highlight_error_list:

@@ -27,7 +27,7 @@ class BomCheckerMainWindow(tk.Tk):
         self.warning_frame = WarningFrame('top')
 
         # set up highlight errors frame (highlights mismatches and other potential errors)
-        self.highlight_errors_frame = HighlightErrorsFrame(self, 'bottom')
+        self.highlight_errors_frame = HighlightErrorsFrame(self, 'bottom', self.compare_search_frame)
         
 
 
