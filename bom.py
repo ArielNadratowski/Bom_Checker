@@ -9,7 +9,7 @@ class Bom:
         self.manufacturer = sub_window.input_storage[4].input.get('1.0', 'end').strip()
         self.manufacturer_part_number = sub_window.input_storage[5].input.get('1.0', 'end').strip()
         self.header = sub_window.input_storage[6].input.get('1.0', 'end').strip()
-        self.bom = bom_dataframe
+        self.bom_dataframe = bom_dataframe
         self.bom_status = status
         self.selected = tk.IntVar(main_window, 0) # this is getting linked back to the main window bc the upload window goes away when you upload a bom
 

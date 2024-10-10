@@ -178,8 +178,51 @@ def compare_reference_designators(warnings, columns, rows, input_bomA, input_bom
     return(flagged_merged_bom_rows)
 
 
+        
+# def search_reference_designator(self):
+    #     tableview.clear()
 
+    #     search_text = self.search_input.get('1.0', 'end')
+    #     search_text = search_text.strip()
+
+    #     self.merged_boms['Ref Dsg'] = self.merged_boms['Ref Dsg'].str.strip()
+
+    #     searched_rows = self.merged_boms[self.merged_boms['Ref Dsg'] == search_text]
+
+    #     # fill in table 
+    #     number_rows = len(searched_rows.index)
+    #     for i in range(number_rows):
+    #         column_number = 0
+    #         row_as_list = searched_rows.iloc[i].tolist()
+    #         for item in row_as_list:
+    #             tableview.insert_item(column_number, text = item)
+    #             column_number += 1
     
 
 
 # Note: uploading BOM > change header index does not update, you have to refresh by hitting upload bom
+
+
+def check_missing_reference_designators(bom, comparison_bom, place_to_store_highlight_errors):
+    # check if missing
+    in_bomA_not_in_bomB = ~bom['split_ref_designators'].isin(comparison_bom['split_ref_designators'])
+    list_ref_dsg_not_in_bomB = []
+    for index, item in enumerate(in_bomA_not_in_bomB, start=0): 
+        if item == True:
+            list_ref_dsg_not_in_bomB.append(bom.loc[index]['split_ref_designators'])
+    if len(list_ref_dsg_not_in_bomB) != 0:
+        for item in list_ref_dsg_not_in_bomB:
+            message = str(item) + ' is in bomA but not in bomB'
+            highlight_error = highlight_error.HighlightError(item, message, 'missing', None)
+            place_to_store_highlight_errors.append(highlight_error)
+
+    in_bomB_not_in_bomA = ~comparison_bom['split_ref_designators'].isin(bom['split_ref_designators'])
+    list_ref_dsg_not_in_bomA = []
+    for index, item in enumerate(in_bomB_not_in_bomA, start=0):
+        if item == True:
+            list_ref_dsg_not_in_bomA.append(comparison_bom.loc[index]['split_ref_designators'])
+    if len(list_ref_dsg_not_in_bomA) != 0:
+        for item in list_ref_dsg_not_in_bomA:
+            message = str(item) + ' is in bomB but not in bomA'
+            highlight_error = highlight_error.HighlightError(item, message, 'missing', None)
+            place_to_store_highlight_errors.append(highlight_error)

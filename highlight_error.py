@@ -1,13 +1,7 @@
 
 class HighlightError:
-    def __init__(self, r):
-        reference_designator = 
-        warning = 
-        error_type = 
-        error_location = 
-
-
-reference_designator: str
-warning: str
-error_type: str
-error_location: list[int]
+    def __init__(self, reference_designator, warning, error_type, error_location):
+        self.reference_designator = reference_designator
+        self.warning = warning
+        self.error_type = error_type
+        self.error_location = error_location
