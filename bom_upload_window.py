@@ -11,7 +11,7 @@ class BomUploadWindow(Toplevel):
         super().__init__()
         # set up window
         self.title('Upload Bom')
-        self.geometry('800x800')
+        self.geometry('800x400')
         self.wm_attributes("-topmost", True)
 
         label = tk.Label(self, text ='Upload a Bom')
