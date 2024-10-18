@@ -8,10 +8,10 @@ from tkinter import ttk
 from importlib import reload
 
 class CompareSearchFrame:
-    def __init__(self, frame_holding_boms, highlight_errors_frame, warning_frame, position, compare_button_coords = [0, 0], search_coords  = [2, 0], padx_ = 10, pady_ = 10, search_input_height = 1, search_input_width = 10):
+    def __init__(self, parent, frame_holding_boms, highlight_errors_frame, warning_frame, compare_button_coords = [0, 0], search_coords  = [2, 0], padx_ = 10, pady_ = 10, search_input_height = 1, search_input_width = 10):
         # set up frame for compare and search bom buttons
-        compare_search_frame = tk.Frame()
-        compare_search_frame.pack(side = position)
+        compare_search_frame = tk.Frame(parent)
+        compare_search_frame.grid(column = 0, row = 3, padx = padx_, pady = pady_)
 
         # place to hold highlight errors list and dataframes
         self.highlight_error_list = []
@@ -19,7 +19,7 @@ class CompareSearchFrame:
         self.all_boms_dataframe = None
 
         # compare bom button
-        compare_button = tk.Button(compare_search_frame, text = 'COMPARE BOMs', command = lambda: self.compare_boms(frame_holding_boms, highlight_errors_frame, warning_frame))
+        compare_button = tk.Button(compare_search_frame, text = 'COMPARE BOMs', command = lambda: self.compare_boms(parent, frame_holding_boms, highlight_errors_frame, warning_frame))
         compare_button.grid(row = compare_button_coords[0], column = compare_button_coords[1], padx = padx_, pady = pady_)
 
         # clear boms button
@@ -27,13 +27,14 @@ class CompareSearchFrame:
         clear_boms.grid(row = compare_button_coords[0], column = compare_button_coords[1] + 1, padx = padx_, pady = pady_)
 
         # search bom button 
-        search_button = tk.Button(compare_search_frame, text = 'Search Ref Dsg', command = lambda: self.search_reference_designator(warning_frame))
-        search_button.grid(row = search_coords[0], column = search_coords[1], padx = padx_, pady = pady_)
+        self.search_button = tk.Button(compare_search_frame, text = 'Search Ref Dsg', command = lambda: self.search_reference_designator(warning_frame))
+        self.search_button.grid(row = search_coords[0], column = search_coords[1], padx = padx_, pady = pady_)
+        self.search_button.config(state = tk.DISABLED)
         self.search_input = tk.Text(compare_search_frame, height = search_input_height, width = search_input_width)
         self.search_input.grid(row = search_coords[0], column = search_coords[1] + 1, padx = padx_, pady = pady_)
 
-    def compare_boms(self, frame_holding_boms, highlight_errors_frame, warning_frame):
-        # clear warnings and highlight errors frame, but not any uploaded boms
+    def compare_boms(self, parent, frame_holding_boms, highlight_errors_frame, warning_frame):
+        # clear warnings, highlight errors frame, merged boms, but not any uploaded boms
         self.clear_data(frame_holding_boms, highlight_errors_frame, warning_frame, clear_boms = False)
         
         # filter for selected dataframes only
@@ -48,13 +49,15 @@ class CompareSearchFrame:
         # check for differences between reference designator rows (different manufacturer, etc)
         self.compare_reference_designators(selected_boms)
         # set up tableview
-        self.set_up_table_view(highlight_errors_frame)
+        self.set_up_table_view(parent, highlight_errors_frame)
         # fill out highlight error table table
         self.fill_table()
         # highlight stuff in table
         self.highlight_table_cells()
         # display warnings
         self.display_warnings(warning_frame)
+        # enable search bom button (button needs merged boms to be available first)
+        self.search_button.config(state = tk.NORMAL)
 
     def check_for_duplicates(self, selected_boms):
         for bom in selected_boms:
@@ -89,7 +92,6 @@ class CompareSearchFrame:
                 self.highlight_error_list.append(highlight_error_item)
 
     ## Compare reference designators
-
     def compare_reference_designators(self, selected_boms):
         selected_bom_dataframes = []
         selected_bom_names = []
@@ -135,7 +137,7 @@ class CompareSearchFrame:
         self.highlight_error_dataframe = all_boms_merged[all_boms_merged['split_ref_designators'].isin(reference_designators_with_errors_set)]
         self.highlight_error_dataframe = self.highlight_error_dataframe.reset_index(drop=True)
 
-    def set_up_table_view(self, highlight_errors_frame):
+    def set_up_table_view(self, parent, highlight_errors_frame):
         # set up table view 
         header_list = list(self.highlight_error_dataframe.columns)
         column_width = []
@@ -154,15 +156,18 @@ class CompareSearchFrame:
             'separator_color':'grey'
             }
             
-        tableview.setup_columns(root = highlight_errors_frame.highlight_errors_frame, 
-                                window = highlight_errors_frame.highlight_errors_frame, 
+        tableview.setup_columns(root = parent, 
+                                window = highlight_errors_frame.highlight_errors_frame.interior, 
                                 column_headers = header_list, 
                                 column_widths = column_width, 
                                 table_height = 20, 
-                                frame_height = 300, 
+                                frame_height = 200, 
                                 column_height = 200, 
                                 header_height = 49, 
-                                table_color_map = COLOR_MAP)
+                                table_color_map = COLOR_MAP,
+                                xpad=0, 
+                                ypad=0
+                                )
         tableview.pack()
 
     def fill_table(self):
@@ -182,13 +187,11 @@ class CompareSearchFrame:
             if error.error_type == 'duplicate':
                 row_indexes = self.highlight_error_dataframe[self.highlight_error_dataframe['split_ref_designators'] == error.reference_designator].index.tolist()
                 for row_index in row_indexes: # because there are more than one index here, but can only feed highlight_cell 1 row at a time
-                    for column_index in range(len(list(self.highlight_error_dataframe.columns))): # also need to iterate through each column because highlight_cell also only takes 1 column at a time
-                        tableview.highlight_cell(column = column_index + 1, row = row_index, bg = 'orange', fg = 'black') # column index gets +1 because tableview doesn't zero index this for some reason??
+                    tableview.highlight_cell(column = 1, row = row_index, bg = 'orange', fg = 'black') # column = 1 because tableview doesn't zero index this for some reason??
             elif error.error_type == 'missing':
                 row_indexes = self.highlight_error_dataframe[self.highlight_error_dataframe['split_ref_designators'] == error.reference_designator].index.tolist()
                 for row_index in row_indexes: 
-                    for column_index in error.error_location:
-                            tableview.highlight_cell(column = column_index + 1, row = row_index, bg = 'red', fg = 'black')
+                    tableview.highlight_cell(column = 1, row = row_index, bg = 'red', fg = 'black')
             else:
                 row_indexes = self.highlight_error_dataframe[self.highlight_error_dataframe['split_ref_designators'] == error.reference_designator].index.tolist()
                 for row_index in row_indexes: 
@@ -199,19 +202,20 @@ class CompareSearchFrame:
         
         for error in self.highlight_error_list:
             if error.error_type == 'duplicate':
-                label = ttk.Label(warning_frame.warning_frame, text = error.warning, foreground = 'orange')
+                label = ttk.Label(warning_frame.warning_frame.interior, text = error.warning, foreground = 'orange')
                 label.pack()
             elif error.error_type == 'missing':
-                label = ttk.Label(warning_frame.warning_frame, text = error.warning, foreground = 'red')
+                label = ttk.Label(warning_frame.warning_frame.interior, text = error.warning, foreground = 'red')
                 label.pack()
             else:
-                label = ttk.Label(warning_frame.warning_frame, text = error.warning, foreground = 'black')
+                label = ttk.Label(warning_frame.warning_frame.interior, text = error.warning, foreground = 'black')
                 label.pack()
 
     def clear_data(self, frame_holding_boms, highlight_errors_frame, warning_frame, clear_boms = True):
         # clear highlight errors list and highlight error dataframe
         self.highlight_error_list = []
         self.highlight_error_dataframe = None
+        self.all_boms_dataframe = []
 
         if clear_boms == True:
             # clear uploaded boms
@@ -222,13 +226,16 @@ class CompareSearchFrame:
                 widget.destroy()
 
         # clear highlight error frame 
-        for widget in highlight_errors_frame.highlight_errors_frame.winfo_children():
+        for widget in highlight_errors_frame.highlight_errors_frame.interior.winfo_children():
             widget.destroy()
 
         reload(tableview) # theres some variables hanging around here that need to get cleared and idk which ones and how many so uh just axing everything
 
+        # disable search reference designator button
+        self.search_button.config(state = tk.DISABLED)
+
         # clear warnings in warning frame
-        for widget in warning_frame.warning_frame.winfo_children():
+        for widget in warning_frame.warning_frame.interior.winfo_children():
             widget.destroy()
 
     def search_reference_designator(self, warning_frame):
@@ -236,7 +243,7 @@ class CompareSearchFrame:
             tableview.clear()
 
             # clear warnings in warning frame
-            for widget in warning_frame.warning_frame.winfo_children():
+            for widget in warning_frame.warning_frame.interior.winfo_children():
                 widget.destroy()
 
             search_text = self.search_input.get('1.0', 'end')

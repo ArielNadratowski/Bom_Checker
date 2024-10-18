@@ -71,7 +71,6 @@ class BomUploadWindow(Toplevel):
         input_manufacturer_part_number = self.input_storage[5].input.get('1.0', 'end').strip()
 
         cleaned_bom = clean_bom(bom_dataframe, input_ref_dsg, input_description, input_quantity, input_manufacturer, input_manufacturer_part_number)
-        print(cleaned_bom)
 
         # create bom object
         bom = Bom(main_window, self, cleaned_bom, status)
