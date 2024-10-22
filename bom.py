@@ -1,5 +1,6 @@
 import tkinter as tk
 
+""" BOM object that holds info about it """
 class Bom:
     def __init__(self, main_window, sub_window, bom_dataframe, status):       
         self.name = sub_window.input_storage[0].input.get('1.0', 'end').strip()
