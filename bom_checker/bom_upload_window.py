@@ -152,14 +152,12 @@ class BomUploadWindow(Toplevel):
         # get rid of any whitespace so that the next line splits cleanly
         input_bom_clean[input_ref_dsg] = input_bom_clean[input_ref_dsg].str.replace(' ','') 
         input_bom_clean[input_manufacturer_part_number] = input_bom_clean[input_manufacturer_part_number].astype(str)
-
         # use regex to insert a comma only when numbers > letters (ABC123,ABC123). 
         # Removes an extra comma if there is already a comma there, and removes the trailing comma that it inserts.
         input_bom_clean[input_ref_dsg] = input_bom_clean[input_ref_dsg].astype(str)
         input_bom_clean[input_ref_dsg] = input_bom_clean[input_ref_dsg].str.replace(r'[a-zA-Z]+[0-9]+', r'\g<0>,', regex=True)
-        # r'[a-zA-Z]+[0-9]+' detects pattern that starts with any number of letter and any number of numbers
+        # r'[a-zA-Z]+[0-9]+' detects pattern that starts with any number of letter and then any number of numbers
         # r'\g<0>,' takes the text of the whole match (\g<0>) and adds a period at the end of it (,)
-
         input_bom_clean[input_ref_dsg] = input_bom_clean[input_ref_dsg].str.replace(',,', ',')
         input_bom_clean[input_ref_dsg] = input_bom_clean[input_ref_dsg].str[:-1]
         

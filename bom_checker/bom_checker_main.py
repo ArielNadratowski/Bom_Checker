@@ -5,5 +5,3 @@ def main():
 
     BomCheckerMainWindow().mainloop() 
 
-
-main()
