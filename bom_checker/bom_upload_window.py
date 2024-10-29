@@ -1,32 +1,36 @@
 import tkinter as tk
-from button_with_text import ButtonWithText
+from bom_checker.button_with_text import ButtonWithText
 from tkinter import filedialog, Toplevel, messagebox
-from button_with_label import ButtonWithLabel
+from bom_checker.button_with_label import ButtonWithLabel
 import pandas as pd
-from bom import Bom
+from bom_checker.bom import Bom
 
 SET_DEBUG = True
 
 """ Separate window from Main Window where BOMs are uploaded from a file """
 class BomUploadWindow(Toplevel):
-    def __init__(self, bom_storage, bom_frame, main_window):
+    def __init__(self, main_window):
         super().__init__()
-        self.set_up_window()
-        self.create_text_input_and_labels()
-        if SET_DEBUG:
-            self.set_debug_inputs()
-        self.create_select_file_button(bom_storage, bom_frame, main_window)
-        self.create_exit_button()
-        
-    def set_up_window(self):
+        self.main_window = main_window
         self.title('Upload Bom')
         self.geometry('800x400')
         self.wm_attributes("-topmost", True)
+        self.button_starting_row = None
+        self.input_storage = None
+        self.bom_label = None
 
+        self._set_up_window()
+        self._create_text_input_and_labels()
+        if SET_DEBUG:
+            self._set_debug_inputs()
+        self._create_select_file_button()
+        self._create_exit_button()
+        
+    def _set_up_window(self):
         label = tk.Label(self, text ='Upload a Bom')
         label.grid(row = 0, column = 0, columnspan = 2)
 
-    def create_text_input_and_labels(self):
+    def _create_text_input_and_labels(self):
         self.button_starting_row = 1
         input_list = [
             'Bom Name', 
@@ -43,7 +47,7 @@ class BomUploadWindow(Toplevel):
             self.input_storage.append(ButtonWithText(self, input, self.button_starting_row))
             self.button_starting_row += 1
 
-    def set_debug_inputs(self):
+    def _set_debug_inputs(self):
         self.input_storage[0].input.insert(1.0, "test") 
         self.input_storage[1].input.insert(1.0, "DESCRIPTION") 
         self.input_storage[2].input.insert(1.0, "QTY") 
@@ -52,48 +56,48 @@ class BomUploadWindow(Toplevel):
         self.input_storage[5].input.insert(1.0, "MFG PN 1") 
         self.input_storage[6].input.insert(1.0, "2") 
 
-    def create_select_file_button(self, bom_storage, bom_frame, main_window):
+    def _create_select_file_button(self):
         select_file_row = self.button_starting_row + 1
         select_file_button = ButtonWithLabel(
             self, 
             'Please select file', 
             'Select File', 
             select_file_row, 
-            command = lambda: self.import_bom(bom_storage, bom_frame, main_window), 
+            command = self._import_bom, 
             column_span = 7, 
             sticky = "W"
         )
         self.bom_label = select_file_button.label_value
 
-    def create_exit_button(self):
+    def _create_exit_button(self):
         exit_window_row = self.button_starting_row + 2
         exit_window_button = tk.Button(self, text = 'EXIT', command = self.destroy)
         exit_window_button.grid(row = exit_window_row, column = 0)
 
-    def import_bom(self, bom_storage, bom_frame, main_window): 
-        bom_dataframe, bom_status = self.select_and_load_bom()
-        cleaned_bom = self.make_cleaned_bom(bom_dataframe)
-        bom = self.make_bom_object(main_window, cleaned_bom, bom_status, bom_storage)
-        self.make_bom_checkbuttons(bom_frame, bom)
+    def _import_bom(self): 
+        bom_dataframe, bom_status = self._select_and_load_bom()
+        cleaned_bom = self._make_cleaned_bom(bom_dataframe)
+        bom = self._make_bom_object(cleaned_bom, bom_status)
+        self._make_bom_checkbuttons(bom)
 
-    def select_and_load_bom(self):
+    def _select_and_load_bom(self):
         # select file
         filename = filedialog.askopenfilename()
         self.bom_label.set(filename)
 
         # load file
         header = self.input_storage[6].input.get('1.0', 'end').strip() # header entry will always be at index 6
-        bom_dataframe, bom_status = self.load_bom_from_file(filename, header)
+        bom_dataframe, bom_status = self._load_bom_from_file(filename, header)
         return bom_dataframe, bom_status
 
-    def make_cleaned_bom(self, bom_dataframe):
+    def _make_cleaned_bom(self, bom_dataframe):
         input_ref_dsg = self.input_storage[3].input.get('1.0', 'end').strip()
         input_description = self.input_storage[1].input.get('1.0', 'end').strip()
         input_quantity = self.input_storage[2].input.get('1.0', 'end').strip()
         input_manufacturer = self.input_storage[4].input.get('1.0', 'end').strip()
         input_manufacturer_part_number = self.input_storage[5].input.get('1.0', 'end').strip()
 
-        cleaned_bom = self.clean_bom(
+        cleaned_bom = self._clean_bom(
             bom_dataframe, 
             input_ref_dsg, 
             input_description, 
@@ -103,16 +107,20 @@ class BomUploadWindow(Toplevel):
         )
         return cleaned_bom
 
-    def make_bom_object(self, main_window, cleaned_bom, bom_status, bom_storage):
-        bom = Bom(main_window, self, cleaned_bom, bom_status)
-        bom_storage.append(bom)
+    def _make_bom_object(self, cleaned_bom, bom_status):
+        bom = Bom(self.main_window, self, cleaned_bom, bom_status)
+        self.main_window.upload_frame.boms.append(bom)
         return bom
 
-    def make_bom_checkbuttons(self, bom_frame, bom_object):
-        check_button = tk.Checkbutton(bom_frame, text = bom_object.name, variable = bom_object.selected)
+    def _make_bom_checkbuttons(self, bom_object):
+        check_button = tk.Checkbutton(
+            self.main_window.upload_frame.boms_uploaded_frame, 
+            text = bom_object.name, 
+            variable = bom_object.selected
+        )
         check_button.pack()
 
-    def load_bom_from_file(self, filename, header_index):
+    def _load_bom_from_file(self, filename, header_index):
         if filename.endswith('xlsx') or filename.endswith('xls'):
                 try:
                     bom = pd.read_excel(filename, header = int(header_index) - 1)
@@ -135,7 +143,7 @@ class BomUploadWindow(Toplevel):
         return bom, bom_status
 
     """ Does some data cleaning on the BOM to fix formating and stuff for later """
-    def clean_bom(
+    def _clean_bom(
             self, 
             input_bom, 
             input_ref_dsg, 

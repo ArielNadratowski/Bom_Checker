@@ -1,8 +1,9 @@
-import scrolled_frame
+from bom_checker.scrolled_frame import ScrolledFrame
 
 """ Shows the table that highlights where errors occur """
 class HighlightErrorsFrame:
     def __init__(self, main_window, padx = 10, pady = 10):
-        self.highlight_errors_frame = scrolled_frame.ScrolledFrame(main_window, False)
-        self.highlight_errors_frame.grid(column = 0, row = 5, sticky = 'EW', padx = padx, pady = pady)
+        self.main_window = main_window
+        self.highlight_errors_subframe = ScrolledFrame(self.main_window, False)
+        self.highlight_errors_subframe.grid(column = 0, row = 5, sticky = 'EW', padx = padx, pady = pady)
 

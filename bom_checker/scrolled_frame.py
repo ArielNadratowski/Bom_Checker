@@ -1,3 +1,5 @@
+# https://coderslegacy.com/python/make-scrollable-frame-in-tkinter/
+
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter.constants import *
@@ -44,4 +46,3 @@ class ScrolledFrame(ttk.Frame):
             self.canvas.itemconfigure(self.interior_id, width=self.canvas.winfo_width())
 
 
-# https://coderslegacy.com/python/make-scrollable-frame-in-tkinter/
