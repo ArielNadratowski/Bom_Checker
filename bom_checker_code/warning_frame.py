@@ -1,4 +1,4 @@
-from bom_checker.scrolled_frame import ScrolledFrame
+from bom_checker_code.scrolled_frame import ScrolledFrame
 
 """ Place where warnings are shown """
 class WarningFrame:

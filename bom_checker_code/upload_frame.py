@@ -1,5 +1,5 @@
 import tkinter as tk
-from bom_checker.bom_upload_window import BomUploadWindow
+from bom_checker_code.bom_upload_window import BomUploadWindow
 
 """ Holds BOM objects as well as shows the checkboxes for each BOM """
 class UploadFrame:

@@ -1,8 +1,8 @@
 import tkinter as tk
 import pandas as pd
 from functools import reduce
-from bom_checker.highlight_error import HighlightError
-from tableview import tableview
+from bom_checker_code.highlight_error import HighlightError
+import tableview.tableview as tableview
 from tkinter import ttk
 from importlib import reload
 

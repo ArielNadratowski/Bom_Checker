@@ -1,9 +1,9 @@
 import tkinter as tk
-from bom_checker.button_with_text import ButtonWithText
+from bom_checker_code.button_with_text import ButtonWithText
 from tkinter import filedialog, Toplevel, messagebox
-from bom_checker.button_with_label import ButtonWithLabel
+from bom_checker_code.button_with_label import ButtonWithLabel
 import pandas as pd
-from bom_checker.bom import Bom
+from bom_checker_code.bom import Bom
 
 SET_DEBUG = True
 

@@ -1,8 +1,8 @@
 import tkinter as tk
-from bom_checker.upload_frame import UploadFrame
-from bom_checker.compare_search_frame import CompareSearchFrame
-from bom_checker.warning_frame import WarningFrame
-from bom_checker.highlight_errors_frame import HighlightErrorsFrame
+from bom_checker_code.upload_frame import UploadFrame
+from bom_checker_code.compare_search_frame import CompareSearchFrame
+from bom_checker_code.warning_frame import WarningFrame
+from bom_checker_code.highlight_errors_frame import HighlightErrorsFrame
 
 """ Main window that contains everything """
 class BomCheckerMainWindow(tk.Tk):

@@ -1,4 +1,4 @@
-from bom_checker.scrolled_frame import ScrolledFrame
+from bom_checker_code.scrolled_frame import ScrolledFrame
 
 """ Shows the table that highlights where errors occur """
 class HighlightErrorsFrame:
