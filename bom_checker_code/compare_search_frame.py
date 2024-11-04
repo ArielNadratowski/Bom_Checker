@@ -108,6 +108,7 @@ class CompareSearchFrame:
         self._clear_data(clear_boms = False)
         
         selected_boms = self._filter_selected_boms()
+        self._check_quantity_mismatch(selected_boms)
         self._check_for_duplicates(selected_boms)
         self._check_missing_reference_designators(selected_boms)
         self._compare_reference_designators(selected_boms)
@@ -170,6 +171,21 @@ class CompareSearchFrame:
                 highlight_error_item = HighlightError(reference_designator, message, 'missing', None) 
                 self.highlight_error_list.append(highlight_error_item)
 
+    def _check_quantity_mismatch(self, selected_boms):
+        for bom in selected_boms:
+            quantity_mismatch_list = []
+            for index, part_number in enumerate(bom.bom_dataframe[bom.manufacturer_part_number]):
+                if bom.bom_dataframe.iloc[index]['quantity_mismatch']:
+                    quantity_mismatch_list.append(part_number)
+            quantity_mismatch_set = set(quantity_mismatch_list)
+            for item in quantity_mismatch_set:
+                self._make_quantity_mismatch_warning(bom, item)
+
+    def _make_quantity_mismatch_warning(self, bom, item):
+        message = 'Quantity for ' + str(item) + ' does not match number of reference designators assigned to it in ' + str(bom.name)
+        highlight_error_item = HighlightError(None, message, 'quantity mismatch', None) 
+        self.highlight_error_list.append(highlight_error_item)
+
     def _compare_reference_designators(self, selected_boms):
         selected_bom_dataframes = []
         selected_bom_names = []
@@ -180,13 +196,12 @@ class CompareSearchFrame:
     def _clean_merge_boms(self, selected_boms, selected_bom_dataframes, selected_bom_names):
         for bom in selected_boms:
             # drop quantity column because the way it currently is isn't useful 
-            # TODO: add a function to check quantity somehow (probably count duplicates in Description?)
-            bom_drop_quantity = bom.bom_dataframe.drop(bom.bom_dataframe.columns[3], axis=1, inplace=False) 
+            bom_drop_cols = bom.bom_dataframe.drop([bom.quantity, 'quantity_mismatch'], axis=1, inplace=False) 
             # need to rename columns besides split_ref_designators to prevent merge error later
-            bom_drop_quantity.columns = bom_drop_quantity.columns.map(
+            bom_drop_cols.columns = bom_drop_cols.columns.map(
                 lambda x : x + '_' + str(bom.name) if x !='split_ref_designators' else x
             )  
-            selected_bom_dataframes.append(bom_drop_quantity)
+            selected_bom_dataframes.append(bom_drop_cols)
             selected_bom_names.append(bom.name)
 
         all_boms_merged = reduce(lambda  left,right: pd.merge(left,right,on=['split_ref_designators'],
@@ -331,6 +346,8 @@ class CompareSearchFrame:
                 self._make_warning_label(error, 'orange')
             elif error.error_type == 'missing':
                 self._make_warning_label(error, 'red')
+            elif error.error_type == 'quantity mismatch':
+                self._make_warning_label(error, 'purple')
             else:
                 self._make_warning_label(error, 'black')
     

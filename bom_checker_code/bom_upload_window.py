@@ -3,6 +3,7 @@ from bom_checker_code.button_with_text import ButtonWithText
 from tkinter import filedialog, Toplevel, messagebox
 from bom_checker_code.button_with_label import ButtonWithLabel
 import pandas as pd
+import numpy as np
 from bom_checker_code.bom import Bom
 
 SET_DEBUG = True
@@ -160,7 +161,7 @@ class BomUploadWindow(Toplevel):
         # get rid of any whitespace so that the next line splits cleanly
         input_bom_clean[input_ref_dsg] = input_bom_clean[input_ref_dsg].str.replace(' ','') 
         input_bom_clean[input_manufacturer_part_number] = input_bom_clean[input_manufacturer_part_number].astype(str)
-        # use regex to insert a comma only when numbers > letters (ABC123,ABC123). 
+        # use regex to insert a comma only when numbers -> letters (ABC123,ABC123). 
         # Removes an extra comma if there is already a comma there, and removes the trailing comma that it inserts.
         input_bom_clean[input_ref_dsg] = input_bom_clean[input_ref_dsg].astype(str)
         input_bom_clean[input_ref_dsg] = input_bom_clean[input_ref_dsg].str.replace(r'[a-zA-Z]+[0-9]+', r'\g<0>,', regex=True)
@@ -168,16 +169,26 @@ class BomUploadWindow(Toplevel):
         # r'\g<0>,' takes the text of the whole match (\g<0>) and adds a period at the end of it (,)
         input_bom_clean[input_ref_dsg] = input_bom_clean[input_ref_dsg].str.replace(',,', ',')
         input_bom_clean[input_ref_dsg] = input_bom_clean[input_ref_dsg].str[:-1]
+
+        # count number of commas for quamtity check and cbind new column to dataset
+        number_items = []
+        for item in input_bom_clean[input_ref_dsg]:
+            number_items.append(str(item).count(',') + 1)
+        input_bom_clean = input_bom_clean.reset_index()
+        column_to_bind = pd.DataFrame({'number_of_items': number_items})
+        input_bom_clean = pd.concat([input_bom_clean, column_to_bind], axis=1)
+        input_bom_clean['quantity_mismatch'] = np.where((pd.to_numeric(input_bom_clean['number_of_items']) != pd.to_numeric(input_bom_clean[input_quantity])), True, False)
         
-        split_columns = input_bom_clean[input_ref_dsg].str.split(',', expand=True) # splits to new columns on the comma
+        # splits to new columns on the comma
+        split_columns = input_bom_clean[input_ref_dsg].str.split(',', expand=True) 
         ref_dsg_position = list(split_columns.columns.values)
         input_bom_clean = pd.concat([input_bom_clean, split_columns], axis=1) 
 
         input_bom_clean['original_index'] = range(0, len(input_bom_clean))
-        # using pivot longer (melt) to reformat. Does lose any columns not listed here. TODO: fix quantities 
+        # using pivot longer (melt) to reformat. Does lose any columns not listed here.
         input_bom_clean = pd.melt(
             input_bom_clean, 
-            id_vars=['original_index', input_description, input_quantity, input_manufacturer, input_manufacturer_part_number], 
+            id_vars=['original_index', input_description, input_quantity, input_manufacturer, input_manufacturer_part_number, 'quantity_mismatch'], 
             value_vars = ref_dsg_position, 
             value_name = 'split_ref_designators', 
             var_name = 'ref_dsg_position'

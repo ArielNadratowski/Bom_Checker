@@ -7,5 +7,4 @@ BOM Checker uses a custom tableview widget that can be found here: https://githu
 Permission to use tableview was approved via messaging the creator over GitHub.
 
 # Future improvements
-1. Be able to check to ensure quantity matches the number of reference designators listed.
-2. Add some sort of configuration file to customize what gets flagged as not matching (don't care whether its made by manufacturer 1 or manufacturer 2).
+1. Add some sort of configuration file to customize what gets flagged as not matching (don't care whether its made by manufacturer 1 or manufacturer 2).
