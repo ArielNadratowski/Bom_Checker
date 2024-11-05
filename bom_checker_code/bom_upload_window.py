@@ -17,7 +17,7 @@ class BomUploadWindow(Toplevel):
         self.geometry('800x400')
         self.wm_attributes("-topmost", True)
         self.button_starting_row = None
-        self.input_storage = None
+        self.input_storage = []
         self.bom_label = None
 
         self._set_up_window()
@@ -42,20 +42,19 @@ class BomUploadWindow(Toplevel):
             'Manufacturer Part Number', 
             'Header Row'
         ]
-        self.input_storage = []
 
         for input in input_list:
             self.input_storage.append(ButtonWithText(self, input, self.button_starting_row))
             self.button_starting_row += 1
 
     def _set_debug_inputs(self):
-        self.input_storage[0].input.insert(1.0, "test") 
-        self.input_storage[1].input.insert(1.0, "DESCRIPTION") 
-        self.input_storage[2].input.insert(1.0, "QTY") 
-        self.input_storage[3].input.insert(1.0, "REF DGN") 
-        self.input_storage[4].input.insert(1.0, "MFG 1") 
-        self.input_storage[5].input.insert(1.0, "MFG PN 1") 
-        self.input_storage[6].input.insert(1.0, "2") 
+        self.input_storage[0].input.insert(1.0, 'test') 
+        self.input_storage[1].input.insert(1.0, 'DESCRIPTION') 
+        self.input_storage[2].input.insert(1.0, 'QTY') 
+        self.input_storage[3].input.insert(1.0, 'REF DGN') 
+        self.input_storage[4].input.insert(1.0, 'MFG 1') 
+        self.input_storage[5].input.insert(1.0, 'MFG PN 1') 
+        self.input_storage[6].input.insert(1.0, '2') 
 
     def _create_select_file_button(self):
         select_file_row = self.button_starting_row + 1
@@ -76,6 +75,11 @@ class BomUploadWindow(Toplevel):
         exit_window_button.grid(row = exit_window_row, column = 0)
 
     def _import_bom(self): 
+        # prevent uploading boms with same name
+        for bom in self.main_window.upload_frame.boms:
+            if self.input_storage[0].input.get('1.0', 'end').strip() == bom.name:
+                messagebox.showerror('Error', 'Cannot have identical bom names.')
+                return
         bom_dataframe, bom_status = self._select_and_load_bom()
         cleaned_bom = self._make_cleaned_bom(bom_dataframe)
         bom = self._make_bom_object(cleaned_bom, bom_status)
