@@ -91,11 +91,7 @@ class CompareSearchFrame:
             pady = self.pady
         )
         self.search_button.config(state = tk.DISABLED)
-        self.search_input = tk.Text(
-            self.compare_search_subframe, 
-            height = search_input_height, 
-            width = search_input_width
-        )
+        self.search_input = tk.Entry(self.compare_search_subframe)
         self.search_input.grid(
             row = self.search_coords[0], 
             column = self.search_coords[1] + 1, 
@@ -278,6 +274,7 @@ class CompareSearchFrame:
         self.highlight_error_dataframe = all_boms_merged[all_boms_merged['split_ref_designators'].isin \
             (reference_designators_with_errors_set)]
         self.highlight_error_dataframe = self.highlight_error_dataframe.reset_index(drop=True)
+        print(self.highlight_error_dataframe)
 
     def _set_up_table_view(self):
         # set up table view 
@@ -290,9 +287,11 @@ class CompareSearchFrame:
                                 window = self.main_window.highlight_errors_frame.highlight_errors_subframe.interior, 
                                 column_headers = header_list, 
                                 column_widths = column_width, 
-                                table_height = 20, 
-                                frame_height = 200, 
-                                column_height = 200, 
+                                # table_hight and column_height is set to length of highlight_error_dataframe x 25 bc tableview rows are 25 in hight
+                                # and both need to be set to the full height due to disabling tableview's scrollbars in favor of my own
+                                table_height = 25 * len(self.highlight_error_dataframe), 
+                                frame_height = 100, 
+                                column_height = 25 * len(self.highlight_error_dataframe), 
                                 header_height = 49, 
                                 table_color_map = self.COLOR_MAP,
                                 xpad=0, 
