@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from bom_checker_code.bom import Bom
 
-SET_DEBUG = True
+SET_DEBUG = False
 
 """ Separate window from Main Window where BOMs are uploaded from a file """
 class BomUploadWindow(Toplevel):
